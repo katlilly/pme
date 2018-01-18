@@ -1,0 +1,9 @@
+*.o
+*.out
+*.pdf
+*_build
+bin/
+_install/bin
+*.dSYM
+*vgcore*
+*~
