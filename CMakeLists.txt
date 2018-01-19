@@ -5,3 +5,7 @@ project(pme)
 add_executable(pme pme.c)
 
 install(TARGETS pme DESTINATION bin)
+
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CONFIGURATION_TYPES Debug)
+
