@@ -8,13 +8,12 @@
 
 static uint32_t *postings_list;
 
-
 int main(int argc, char *argv[])
 {
-    printf("entered main\n");
-    int listnumber = 0;
-    
+    int listnumber;
     const char *filename;
+    FILE *fp;
+    uint32_t length;
     
     if (argc == 2) {
         filename = argv[1];
@@ -24,12 +23,12 @@ int main(int argc, char *argv[])
     
     postings_list = malloc(NUMBER_OF_DOCS * sizeof postings_list[0]);
     
-    FILE *fp;
     if ((fp = fopen(filename, "rb")) == NULL) {
         exit(printf("Cannot open %s\n", filename));
     }
     
-    uint32_t length;
+    listnumber = 0;
+
     while (fread(&length, sizeof(length), 1, fp)  == 1) {
         
         /* Read one postings list (and make sure we did so successfully) */

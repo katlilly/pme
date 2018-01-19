@@ -6,8 +6,8 @@ CFLAGS = -ansi -pedantic -W -Wall -g
 pme: pme.c
 	$(CC) $(CFLAGS) -o pme pme.c
 
-runpme: pme postings.bin
-	./pme postings.bin
+runpme: pme _build/Debug/postings.bin
+	./pme _build/Debug/postings.bin
 
 clean:
 	rm -f pme
