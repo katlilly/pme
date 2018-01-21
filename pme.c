@@ -11,7 +11,7 @@ static uint32_t *postings_list;
 
 int numperms; /* number of distinct permutations of a bitwidth combination */
 int *comb; /* bitwidth combination array generated for each list */
-int topack; /* global variable to hold number of ints in the generated combination */
+int topack; /* global variable holds number of ints in generated combination */
 
 /* data structure for statistical data for a single list */
 typedef struct {
@@ -85,9 +85,10 @@ void generate_perms(int *x, int n, void callback(int *, int))
 
 
 /* make combination selector for a list with given statistics */
-int * make_combs(int mode, double modeFrac, int low, double lowFrac, int high, double highFrac)
+int * make_combs(int mode, double modeFrac, int low, double lowFrac,
+                 int high, double highFrac)
 {
-    int bitsused, numInts, tries, i, external_wasted_bits;
+    int bitsused, numInts, tries, i, ext_wasted_bits;
     
     int payload = 32;
     int numLow = 1, numMode = 1, numHigh = 1;
@@ -125,17 +126,20 @@ int * make_combs(int mode, double modeFrac, int low, double lowFrac, int high, d
                 numInts++;
                 lowusedfrac = (double) numLow / numInts;
             }
-            /* most cases break out of loop here, some get stuck because of fractions */
-            if (bitsused + low > payload && bitsused + high - mode > payload && bitsused + mode - low > payload) {
+            /* most cases break out of loop here, some get stuck bc frac */
+            if (bitsused + low > payload
+                && bitsused + high - mode > payload
+                && bitsused + mode - low > payload) {
                 break;
             }
             /* add extra ints to fill space regardless of modfrac, catches a few
              cases that can't break out because of exception frequencies */
-            /****** 20 is a made up number and is probably bigger than it needs to be  ******/
+            /**** 20 is a made up number and is prob bigger than needed  ****/
             if (tries > 20) {
-                /* best option is to promote one mode to high exception
-                 (the order of these if elses is a judgement call i've made) */
-                if (bitsused + high - mode <= payload && numMode > 0) {
+                /* best option is to promote one mode to high exception */
+            /**** order of if-elses is a judgement call - revisit this ****/
+                if (bitsused + high - mode <= payload
+                    && numMode > 0) {
                     numMode--;
                     numHigh++;
                     bitsused += high - mode;
@@ -162,12 +166,12 @@ int * make_combs(int mode, double modeFrac, int low, double lowFrac, int high, d
         }
         
         /* check for errors: pipe output to grep wasted or grep overflow */
-        external_wasted_bits = payload - numLow * low - numMode * mode - numHigh * high;
-        if (external_wasted_bits > low) {
-            printf("%d wasted bits  ", external_wasted_bits);
+        ext_wasted_bits = payload - numLow*low - numMode*mode - numHigh*high;
+        if (ext_wasted_bits > low) {
+            printf("%d wasted bits\n", ext_wasted_bits);
         }
         if (bitsused > 32) {
-            printf("overflow  ");
+            printf("more than 32 bits used\n");
         }
         
         /* fill combination array */
@@ -183,14 +187,14 @@ int * make_combs(int mode, double modeFrac, int low, double lowFrac, int high, d
             comb[i] = high;
         }
         
-        topack = numInts; /* send number of ints in combination to global variable */
+        topack = numInts; /* send number of ints in comb to global var */
         qsort(comb, topack, sizeof(*comb), compare_ints);
         return comb;
         
     } else {
         /* deal with case where high + low + mode > 32 */
         /* currently just have two options, pack 1 or 2 ints */
-        /* may want to do something slightly fancier */
+        /**** add extra conditions for assymetric cases ****/
         if (high > 16) {
             topack = 1;
             comb = malloc(topack * sizeof(*comb));
@@ -207,14 +211,13 @@ int * make_combs(int mode, double modeFrac, int low, double lowFrac, int high, d
 }
 
 
-/* getStats function calculate statistics of a list for use in selector generator
+/* getStats() calculates statistics of a list for use in selector generator
  returns a listStats structure, takes list number and length */
 listStats getStats(int number, int length)
 {
     int i, prev, max, mode, lowexception, nintyfifth, set95th;
     int highoutliers, lowoutliers;
-    int *bitwidths;
-    int *dgaps;
+    int *bitwidths, *dgaps;
     double sum, mean, stdev, fraction;
     listStats tempList;
     tempList.listNumber = number;
@@ -320,14 +323,16 @@ int main(int argc, char *argv[])
     while (fread(&length, sizeof(length), 1, fp)  == 1) {
         
         /* Read one postings list (and make sure we did so successfully) */
-        if (fread(postings_list, sizeof(*postings_list), length, fp) != length) {
+        if (fread(postings_list,
+                  sizeof(*postings_list), length, fp) != length) {
             exit(printf("i/o error\n"));
         }
         listnumber++;
         
         stats = getStats(listnumber, length);
         
-        comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp, stats.lowFrac, stats.highexcp, stats.highFrac);
+        comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp,
+                          stats.lowFrac, stats.highexcp, stats.highFrac);
         
         
         /* below is what I did when looking at statistics,
