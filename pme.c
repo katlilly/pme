@@ -28,6 +28,13 @@ typedef struct {
     int numPerms;
 } listStats;
 
+/* data structure for each row of selector table
+   using 8 bit selectors so will declare a 256 row table */
+typedef struct {
+    int intstopack;
+    int *bitwidths;
+} selector;
+
 
 int compare_ints(const void *a, const void *b) {
     const int *ia = (const int *) a;
@@ -211,6 +218,23 @@ int * make_combs(int mode, double modeFrac, int low, double lowFrac,
 }
 
 
+void print_selector_table(selector table[])
+{
+    int i;
+    int rows;
+
+    rows = 256; /* using 8 bit selector */
+    
+    printf("selector table:\n");
+    for (i = 0; i < 20; i++) {
+        printf("ints to pack: %d, Bitwidths: ", table[i].intstopack);
+        for (int j = 0; j < table[i].intstopack; j++) {
+            printf("%d, ", table[i].bitwidths[j]);
+        }
+        printf("\n");
+    }
+}
+
 /* getStats() calculates statistics of a list for use in selector generator
  returns a listStats structure, takes list number and length */
 listStats getStats(int number, int length)
@@ -301,7 +325,7 @@ listStats getStats(int number, int length)
 
 int main(int argc, char *argv[])
 {
-    int listnumber;
+    int listnumber, i;
     const char *filename;
     FILE *fp;
     uint32_t length;
@@ -334,11 +358,35 @@ int main(int argc, char *argv[])
         comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp,
                           stats.lowFrac, stats.highexcp, stats.highFrac);
         
+//        printf("combination for listnumber %d: ", listnumber);
+//        for (i = 0; i < topack; i++) {
+//            printf("%d, ", comb[i]);
+//        }
+//        printf("\n");
         
+        if (listnumber == 96) {
+            selector table[256];
+            
+            printf("mode of list 96: %d\n", stats.mode);
+            for (i = 0; i < 32; i++) {
+                int bitwidth = i + 1;
+                int numbertopack = 32 / bitwidth;
+                printf("row number: %d, ints to pack: %d, bitwidth; %d\n", i, numbertopack, bitwidth);
+                table[i].intstopack = numbertopack;
+                table[i].bitwidths = malloc(numbertopack * sizeof(*table[i].bitwidths));
+                for (int j = 0; j < numbertopack; j++) {
+                    table[i].bitwidths[j] = bitwidth;
+                }
+            }
+            
+            
+            
+            print_selector_table(table);
+        }
         /* below is what I did when looking at statistics,
          instead will generate a selector table from the combination
         numperms = 0;
-        generate_perms(comb, topack, output_perms);  this updates global variable numperms
+        generate_perms(comb, topack, output_perms);  updates global var numperms
         stats.numPerms = numperms; */
         
     }/* end read-in of a single list*/
