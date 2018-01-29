@@ -11,7 +11,7 @@ static uint32_t *postings_list;
 int numperms; /* number of distinct permutations of a bitwidth combination */
 int *comb; /* bitwidth combination array generated for each list */
 int topack; /* number of ints in generated combination */
-int rowsfilled; /* keep track of row number when generating selector table */
+int rownumber; /* keep track of row number when generating selector table */
 int plainrows; /* how many of the symmetric selectors have been used */
 
 /* data structure for statistical data for a single list */
@@ -59,10 +59,11 @@ void output_perms(int *array, int length)
 /* populate selector table which has been declared as global data */
 void add_perm_to_table(int *array, int length)
 {
-    table[rowsfilled].intstopack = length;
-    table[rowsfilled].bitwidths = malloc(length * sizeof(*table[rowsfilled].bitwidths));
-    for (int i = 0; i < length; i++) {
-        table[rowsfilled].bitwidths[i] = array[i];
+    int i;
+    table[rownumber].intstopack = length;
+    table[rownumber].bitwidths = malloc(length * sizeof(*table[rownumber].bitwidths));
+    for (i = 0; i < length; i++) {
+        table[rownumber].bitwidths[i] = array[i];
     }
     
 }
@@ -102,8 +103,8 @@ void generate_perms(int *x, int n, void callback(int *, int))
     do {
         if (callback) callback(x, n);
         numperms++;
-        rowsfilled++;
-    } while (next_lex_perm(x, n) && rowsfilled - plainrows < 246);
+        rownumber++;
+    } while (next_lex_perm(x, n) && rownumber - plainrows < 246);
     /* second condition leaves room for 10 symmetric selectors */
 }
 
@@ -235,17 +236,13 @@ int * make_combs(int mode, double modeFrac, int low, double lowFrac,
 }
 
 
-void print_selector_table(selector table[])
+void print_selector_table(selector table[], int rowsfilled)
 {
-    int i;
-    int rows;
-
-    rows = 256; /* using 8 bit selector */
-    
+    int i, j;
     printf("selector table:\n");
-    for (i = 0; i < rows; i++) {
+    for (i = 0; i < rowsfilled; i++) {
         printf("ints to pack: %d, Bitwidths: ", table[i].intstopack);
-        for (int j = 0; j < table[i].intstopack; j++) {
+        for (j = 0; j < table[i].intstopack; j++) {
             printf("%d, ", table[i].bitwidths[j]);
         }
         printf("\n");
@@ -343,7 +340,7 @@ listStats getStats(int number, int length)
 
 int main(int argc, char *argv[])
 {
-    int listnumber, i;
+    int listnumber, bitwidth, i, j;
     const char *filename;
     FILE *fp;
     uint32_t length;
@@ -376,46 +373,75 @@ int main(int argc, char *argv[])
         comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp,
                           stats.lowFrac, stats.highexcp, stats.highFrac);
         
-        if (listnumber == 45979) {
-            rowsfilled = 0;
-            
-            printf("mode of list 96: %d\n", stats.mode);
-            for (i = 0; i <= stats.mode; i++) {
-                int bitwidth = i + 1;
-                int numbertopack = 32 / bitwidth;
-                table[i].intstopack = numbertopack;
-                table[i].bitwidths = malloc(numbertopack *
-                                            sizeof(*table[i].bitwidths));
-                for (int j = 0; j < numbertopack; j++) {
-                    table[i].bitwidths[j] = bitwidth;
+        //if (listnumber == 45979) {
+        
+        rownumber = 0;
+        
+        /* write symmetric selectors before permutations */
+        /* this works as you'd want it to in most cases, but adds redundant
+           rows after intstopack = 5 (eg packs 4 ints with both 7 and 8) */
+        bitwidth = 1;
+        int numbertopack = 32 / bitwidth;
+        rownumber = 0;
+        do {
+            if (numbertopack == 5) { /* prevent useless rows */
+                for (i = numbertopack; numbertopack > topack; numbertopack--) {
+                    table[rownumber].intstopack = numbertopack;
+                    table[rownumber].bitwidths = malloc(numbertopack * sizeof(*table[rownumber].bitwidths));
+                    for (j = 0; j < numbertopack; j++) {
+                        table[rownumber].bitwidths[j] = 32 / numbertopack;
+                    }
+                    rownumber++;
                 }
-            }
-            rowsfilled = i;
-            plainrows = i;
-            printf("plain rows: %d\n", plainrows);
-            generate_perms(comb, topack, add_perm_to_table);
-
-            for (i = 6; i > 0; i--) {
-                table[rowsfilled].intstopack = i;
-                int bitwidth = 32 / i;
-                table[rowsfilled].bitwidths = malloc(i * sizeof(*table[rowsfilled].bitwidths));
-                for (int j = 0; j < i; j++) {
-                    table[rowsfilled].bitwidths[j] = bitwidth;
-                }
-                rowsfilled++;
-                plainrows++; /* just for sanity check */
                 
+                break;
+            } else {
+                table[rownumber].intstopack = numbertopack;
+                table[rownumber].bitwidths = malloc(numbertopack * sizeof(*table[rownumber].bitwidths));
+                for (i = 0; i < numbertopack; i++) {
+                    table[rownumber].bitwidths[i] = bitwidth;
+                }
+                bitwidth++;
+                numbertopack = 32 / bitwidth;
+                rownumber++;
             }
-            printf("plain rows: %d\n", plainrows);
-            
-            
-            print_selector_table(table);
+        } while (numbertopack > topack);
+        
+
+        //printf("list number: %d, numperms: %d\n", listnumber, numperms);
+        plainrows = rownumber;
+        //printf("plain rows: %d\n", plainrows);
+        
+        
+        /* write permutations to selector table */
+        numperms = 0;
+        generate_perms(comb, topack, add_perm_to_table);
+        if (numperms == 1) {
+            rownumber--; /* prevent duplicated row that occurs in this case */
         }
+        //int permutationrows = rownumber - plainrows;
+        //printf("permutation rows: %d\n", permutationrows);
+        
+        /* write symmetric selectors after permutations */
+        for (i = topack; i > 0; i--) {
+            table[rownumber].intstopack = i;
+            
+            bitwidth = 32 / i;
+            table[rownumber].bitwidths = malloc(i * sizeof(*table[rownumber].bitwidths));
+            for (j = 0; j < i; j++) {
+                table[rownumber].bitwidths[j] = bitwidth;
+            }
+            rownumber++;
+            plainrows++; /* just for sanity check */
+        }
+        if (listnumber == 96) {
+            print_selector_table(table, rownumber);
+        }
+        //}/* end if for a specified list*/
 
     }/* end read-in of a single list*/
     
     printf("number of lists: %d\n", listnumber);
-    
     return 0;
 }
 
