@@ -7,6 +7,9 @@
 #define NUMBER_OF_DOCS (1024 * 1024 * 128)
 
 static uint32_t *postings_list;
+uint32_t *dgaps, *compressed, *decoded;
+uint32_t *selectors;
+
 
 int numperms; /* number of distinct permutations of a bitwidth combination */
 int *comb; /* bitwidth combination array generated for each list */
@@ -39,12 +42,147 @@ typedef struct {
 
 selector table[256];
 
+/* data structure for each line in the selector table */
+typedef struct
+{
+    uint32_t bits;
+    int intstopack;
+    uint32_t masks;
+} s9selector;
+
+/* the selectors for simple-9 */
+s9selector s9table[] =
+{
+    {1,  28, 1},
+    {2,  14, 3},
+    {3,  9,  7},
+    {4,  7,  0xf},
+    {5,  5,  0x1f},
+    {7,  4,  0x7f},
+    {9,  3,  0x1ff},
+    {14, 2,  0x3fff},
+    {28, 1,  0xfffffff}
+};
+
+uint32_t number_of_selectors = sizeof(table) / sizeof(*table);
+
 
 int compare_ints(const void *a, const void *b) {
     const int *ia = (const int *) a;
     const int *ib = (const int *) b;
     return *ia < *ib ? -1 : *ia == *ib ? 0 : 1;
 }
+
+
+uint32_t min(uint32_t a, uint32_t b)
+{
+    return a <= b ? a : b;
+}
+
+
+/* simple 9 compression function */
+uint32_t s9encode(uint32_t *destination, uint32_t *raw, uint32_t integers_to_compress)
+{
+    uint32_t which;                             /* which element in selector array */
+    int current;                                /* count of elements within each compressed word */
+    int topack;                                 /* min of intstopack and what's available to compress */
+    uint32_t *integer = raw;                    /* the current integer to compress */
+    uint32_t *end = raw + integers_to_compress; /* the end of the input array */
+    uint32_t code, shiftedcode;
+    
+    /* chose selector */
+    for (which = 0; which < number_of_selectors; which++)
+    {
+        topack = min(integers_to_compress, s9table[which].intstopack);
+        end = raw + topack;
+        for (; integer < end; integer++) {
+            if (fls(*integer) > s9table[which].bits)
+                break;
+        }
+        if (integer >= end) {
+            break;
+        }
+    }
+    
+    /* pack one word */
+    *destination = 0;
+
+    *destination = *destination | which;
+    for (current = 0; current < topack; current++) {
+        code = raw[current];
+        shiftedcode = code << (4 + (current * s9table[which].bits));
+        *destination = *destination | shiftedcode;
+    }
+    return topack;    /* return number of dgaps compressed into this word */
+}
+
+/* pme compression function, needs changing so that payloads are 32 bits and
+ selectors are stored in a separate array */
+uint32_t pme_encode(uint32_t *destination, uint32_t *raw, int *selectors, uint32_t integers_to_compress)
+{
+    uint32_t which;                             /* which row in selector array */
+    int column;                                 /* which element in bitwidth array */
+    int current;                                /* count of elements within each compressed word */
+    int topack;                                 /* min of ints/selector and remaining data to compress */
+    uint32_t *integer = raw;                    /* the current integer to compress */
+    uint32_t *end = raw + integers_to_compress; /* the end of the input array */
+    
+    /* choose selector */
+    uint32_t *start = integer;
+    for (which = 0; which < rownumber; which++)
+    {
+        column = 0; /* go back to start of each row because of way some selectors may be ordered */
+        integer = start; /* and also go back to first int that needs compressing */
+        topack = min(integers_to_compress, table[which].intstopack);
+        end = raw + topack;
+        for (; integer < end; integer++) {
+            if (fls(*integer) > table[which].bitwidths[column]) {
+                break; /* increment 'which' if current integer can't fit in this many bits */
+            }
+            column++;
+        }
+        if (integer >= end) {
+            break;
+        }
+    }
+    
+    /* pack one word */
+    *destination = 0;
+    *selectors = 0;
+    *selectors = *selectors | which;
+    //*destination = *destination | which; /* put selector in (still using 4 bits for now) */
+    int i = 0;
+    //int shiftdistance = 5; /* 5 bit selector */
+    int shiftdistance = 0;
+    for (current = 0; current < topack; current++) {
+        *destination = *destination | raw[current] << shiftdistance;
+        shiftdistance += table[which].bitwidths[i];
+        i++;
+    }
+    return topack;   /* return number of dgaps compressed into this word */
+}
+
+
+/* decompression with non-uniform selectors */
+uint32_t pme_decompress(uint32_t *dest, uint32_t word, uint32_t selector, int offset)
+{
+    int i, bits, intsout = 0;
+    uint32_t mask, payload;
+    //selector = word & 31; /*** 5 bit selector ***/
+    //payload = word >> 5; /*** 5 bit selector ***/
+    //selector = *selectors;
+    payload = word;
+    //printf("selector table row: %d\n", selector);
+    for (i = 0; i < table[selector].intstopack; i++) {
+        bits = table[selector].bitwidths[i];
+        mask = pow(2, bits) - 1;
+        decoded[intsout + offset] = payload & mask;
+        intsout++;
+        payload = payload >> bits;
+    }
+    return intsout;
+}
+
 
 
 /* print a permutation to screen */
@@ -256,7 +394,7 @@ listStats getStats(int number, int length)
 {
     int i, prev, max, mode, lowexception, nintyfifth, set95th;
     int highoutliers, lowoutliers;
-    int *bitwidths, *dgaps;
+    int *bitwidths;//, *dgaps;
     double sum, mean, stdev, fraction;
     listStats tempList;
     tempList.listNumber = number;
@@ -352,14 +490,17 @@ int main(int argc, char *argv[])
         exit(printf("Usage::%s <binfile>\n", argv[0]));
     }
     
-    postings_list = malloc(NUMBER_OF_DOCS * sizeof postings_list[0]);
+    postings_list = malloc(NUMBER_OF_DOCS * sizeof(postings_list[0]));
+    compressed = malloc(NUMBER_OF_DOCS * sizeof(*compressed));
+    decoded = malloc(NUMBER_OF_DOCS * sizeof(*decoded));
+    selectors = malloc(NUMBER_OF_DOCS * sizeof(*selectors));
     
     if ((fp = fopen(filename, "rb")) == NULL) {
         exit(printf("Cannot open %s\n", filename));
     }
     
     listnumber = 0;
-    while (fread(&length, sizeof(length), 1, fp)  == 1) {
+    while (fread(&length, sizeof(length), 1, fp) == 1) {
         
         /* Read one postings list (and make sure we did so successfully) */
         if (fread(postings_list,
@@ -369,6 +510,8 @@ int main(int argc, char *argv[])
         listnumber++;
         
         stats = getStats(listnumber, length);
+        /* conversion to dgaps list happens within getStats function */
+        
         
         comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp,
                           stats.lowFrac, stats.highexcp, stats.highFrac);
@@ -436,6 +579,54 @@ int main(int argc, char *argv[])
         }
         if (listnumber == 96) {
             print_selector_table(table, rownumber);
+            double sumencoded = 0;
+            double meanencoded;
+            /* compress with bespoke selector table */
+            uint32_t numencoded = 0;
+            uint32_t compressedwords = 0;
+            uint32_t compressedints = 0;
+            for (compressedints = 0; compressedints < length; compressedints += numencoded) {
+                numencoded = pme_encode(compressed + compressedwords, dgaps + compressedints, selectors + compressedwords, length - compressedints);
+                compressedwords++;
+                sumencoded += numencoded;
+                meanencoded = sumencoded / compressedwords;
+                //printf("numencoded: %d, compressed words: %d\n", numencoded, compressedwords);
+            }
+            printf("mean ints per compressed word pme: %.2f\n", meanencoded);
+
+            /* pme decompress */
+            int offset = 0;
+            for (i = 0; i < compressedwords; i++) {
+                //printf("decompressing %dth word\n", i);
+                offset += pme_decompress(decoded, compressed[i], selectors[i], offset);
+            }
+            
+            /* compress 1 list with simple9 */
+            sumencoded = 0;
+            numencoded = 0;  // return value of encode function, the number of ints compressed
+            compressedwords = 0;      // offset for position in output array "compressed"
+            compressedints = 0;       // offset for position in input array "dgaps"
+            for (compressedints = 0; compressedints < length; compressedints += numencoded) {
+                numencoded = s9encode(compressed + compressedwords, dgaps + compressedints, length - compressedints);
+                compressedwords++;
+                sumencoded += numencoded;
+                meanencoded = sumencoded / compressedwords;
+                //printf("numencoded: %d, compressed words: %d\n", numencoded, compressedwords);
+
+            }
+            printf("mean ints per compressed word simple9: %.2f\n", meanencoded);
+
+            
+            /* find errors in compression or decompression */
+            // *******************************************
+//             printf("original: decompressed:\n");
+//             for (i = 0; i < length; i++) {
+//                 printf("%6d        %6d", dgaps[i], decoded[i]);
+//                 if (dgaps[i] != decoded[i]) {
+//                     printf("     wrong");
+//                 }
+//                 printf("\n");
+//             }
         }
         //}/* end if for a specified list*/
 
