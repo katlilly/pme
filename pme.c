@@ -577,8 +577,8 @@ int main(int argc, char *argv[])
             rownumber++;
             plainrows++; /* just for sanity check */
         }
-        if (listnumber == 96) {
-            print_selector_table(table, rownumber);
+        if (length > 20000) {
+            //print_selector_table(table, rownumber);
             double sumencoded = 0;
             double meanencoded;
             /* compress with bespoke selector table */
