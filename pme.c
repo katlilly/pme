@@ -47,6 +47,8 @@ typedef struct
 } selector;
 
 selector table[256];
+selector table4bit[16];
+selector table6bit[64];
 
 
 /* data structure for each line in the simple9 selector table */
@@ -260,7 +262,7 @@ void generate_perms(int *x, int n, void callback(int *, int))
         if (callback) callback(x, n);
         numperms++;
         rownumber++;
-    } while (next_lex_perm(x, n) && rownumber - plainrows < 246);
+    } while (next_lex_perm(x, n) && rownumber - plainrows < 6);
     /* second condition leaves room for 10 symmetric selectors */
 }
 
@@ -497,6 +499,7 @@ int main(int argc, char *argv[])
 {
     int offset, listnumber, bitwidth, numbertopack, i, j;
     int number_of_lists = 499692;
+    int *permsarray;
     const char *filename;
     FILE *fp;
     uint32_t length;
@@ -508,6 +511,7 @@ int main(int argc, char *argv[])
     
     meanencodedpme = malloc(number_of_lists * sizeof(*meanencodedpme));
     meanencodedsimple9 = malloc(number_of_lists * sizeof(*meanencodedsimple9));
+    permsarray = malloc((number_of_lists + 1) * sizeof(*permsarray));
     
     if (argc == 2) {
         filename = argv[1];
@@ -540,6 +544,9 @@ int main(int argc, char *argv[])
         /* generate the bitwidth combination to be to make the permutations */
         comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp,
                           stats.lowFrac, stats.highexcp, stats.highFrac);
+        
+        /* record number of permutations for each list */
+        permsarray[listnumber] = numperms;
         
         /* write the symmetric selectors that come before permutations */
         bitwidth = 1;
@@ -643,8 +650,16 @@ int main(int argc, char *argv[])
     
     printf("total compressed length pme: %.f\n", total_comp_length_pme);
     printf("total compressed length simple9: %.f\n", total_comp_length_s9);
-    printf("pme length including selectors: %.f\n", total_comp_length_pme * 1.25);
-    printf("ratio of current implementation of pme to simple9 (<1 means improvement): %.3f\n",  (total_comp_length_pme * 1.25) / total_comp_length_s9);
+    printf("pme length including selectors: %.f\n", total_comp_length_pme * 1.125);
+    printf("ratio of current implementation of pme to simple9 (<1 means improvement): %.3f\n",  (total_comp_length_pme * 1.125) / total_comp_length_s9);
+
+    
+    free(meanencodedsimple9);
+    free(meanencodedpme);
+    free(dgaps);
+    free(postings_list);
+    free(compressed);
+    free(decoded);
     
     return 0;
 }
