@@ -175,8 +175,8 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
     
     /* pack one word */
     *destination = 0;
-    *selectors = 0;
-    *selectors = *selectors | which;
+    //*selectors = 0;
+    *selectors = 0 | which;
     i = 0;
     int shiftdistance = 0;
     for (current = 0; current < topack; current++) {
@@ -187,6 +187,67 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
     return topack;   /* return number of dgaps compressed into this word */
 }
 
+
+/* pme vector compression function  */
+uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
+                    uint32_t integers_to_compress)
+{
+    int i, vector_length;
+    uint32_t which;                             /* which row in selector array */
+    int column;                                 /* which element in bitwidth array */
+    int current;                                /* count of elements within each compressed word */
+    int topack;                                 /* min of ints/selector and remaining data to compress */
+    uint32_t *integer = raw;                    /* the current integer to compress */
+    uint32_t *end = raw + integers_to_compress; /* the end of the input array */
+    
+    /* set size of word - vector_length = 4 for a 128bit word */
+    vector_length = 4;
+    
+    /* choose selector */
+    uint32_t *start = integer;
+    for (which = 0; which < rownumber; which++) {
+        column = 0; /* go back to start of each row because of way some selectors may be ordered */
+        integer = start; /* and also go back to first int that needs compressing */
+        topack = min(integers_to_compress, table[which].intstopack);
+        /*** need to rethink topack variable for vector instructions ***/
+        end = raw + topack;
+        for (; integer < end; integer += 4) {
+            if (fls(*integer) > table[which].bitwidths[column] ||
+                fls(*(integer + 1)) > table[which].bitwidths[column] ||
+                fls(*(integer + 2)) > table[which].bitwidths[column] ||
+                fls(*(integer + 3)) > table[which].bitwidths[column]) {
+                /*** need extra conditons here to check whether there are four ints there? ***/
+                break; /* increment 'which' if current integer can't fit in this many bits */
+            }
+            column++;
+        }
+        if (integer >= end) {
+            break;
+        }
+    }
+    
+    /* set four 32bit ints to zero */
+    *destination = 0;
+    *(destination + 1) = 0;
+    *(destination + 2) = 0;
+    *(destination + 3) = 0;
+    
+    /* put the selector in the selectors array */
+    *selectors = 0;
+    *selectors = *selectors | which;
+    
+    /* pack one "128bit word" */
+    /**** to do ****/
+    i = 0;
+    int shiftdistance = 0;
+    for (current = 0; current < topack; current++) {
+        *destination = *destination | raw[current] << shiftdistance;
+        
+        shiftdistance += table[which].bitwidths[i];
+        i++;
+    }
+    return topack * vector_length;   /* return number of dgaps compressed into this word */
+}
 
 /* decompression with non-uniform selectors */
 uint32_t pme_decompress(uint32_t word, uint32_t selector, int offset)
@@ -262,13 +323,18 @@ void generate_perms(int *x, int n, void callback(int *, int))
         if (callback) callback(x, n);
         numperms++;
         rownumber++;
-    } while (next_lex_perm(x, n) && rownumber - plainrows < 6);
+    } while (next_lex_perm(x, n) && rownumber - plainrows < 246);
     /* second condition leaves room for 10 symmetric selectors */
 }
+/* the literal in the last condition controls how many bits in the selector
+ 10 rows are reserved for the symmetric selectors, so:
+ 246 means 8 bit selector
+ 54 means 6 bit selector
+ 6 means 4 bit selector */
 
 
 /* make combination selector for a list with given statistics */
-int * make_combs(int mode, double modeFrac, int low, double lowFrac,
+int * make_comb(int mode, double modeFrac, int low, double lowFrac,
                  int high, double highFrac)
 {
     int bitsused, numInts, tries, i;
@@ -542,7 +608,7 @@ int main(int argc, char *argv[])
         /* conversion to dgaps list happens within getStats function */
         
         /* generate the bitwidth combination to be to make the permutations */
-        comb = make_combs(stats.mode, stats.modFrac, stats.lowexcp,
+        comb = make_comb(stats.mode, stats.modFrac, stats.lowexcp,
                           stats.lowFrac, stats.highexcp, stats.highFrac);
         
         /* record number of permutations for each list */
@@ -598,23 +664,36 @@ int main(int argc, char *argv[])
             plainrows++; /* just for sanity check */
         }
         
+        //if(length > 10000) {
+        //    print_selector_table(table, rownumber);
+        //}
+            
         sumencoded = 0;
         numencoded = 0;
         compressedwords = 0;
         compressedints = 0;
         
         /* compress with bespoke selector table */
+//        for (compressedints = 0; compressedints < length; compressedints += numencoded) {
+//            numencoded = pme_encode(compressed + compressedwords, dgaps + compressedints,
+//                                    selectors + compressedwords, length - compressedints);
+//            compressedwords++;
+//            sumencoded += numencoded;
+//            meanencoded = sumencoded / compressedwords;
+//        }
+//        meanencodedpme[listnumber] = meanencoded;
+//        total_comp_length_pme +=compressedwords;
+        
+        /* compress with pme table, and with 1 selector for every 128 bits */
         for (compressedints = 0; compressedints < length; compressedints += numencoded) {
-            numencoded = pme_encode(compressed + compressedwords, dgaps + compressedints,
+            numencoded = pme_vector_encode(compressed + compressedwords, dgaps + compressedints,
                                     selectors + compressedwords, length - compressedints);
-            compressedwords++;
-            sumencoded += numencoded;
-            meanencoded = sumencoded / compressedwords;
+            compressedwords += 4;
         }
         meanencodedpme[listnumber] = meanencoded;
         total_comp_length_pme +=compressedwords;
         
-        /* pme decompress */
+        /* pme decompress - fills global array decoded[] */
         offset = 0;
         for (i = 0; i < compressedwords; i++) {
             offset += pme_decompress(compressed[i], selectors[i], offset);
@@ -637,14 +716,14 @@ int main(int argc, char *argv[])
         
         /* find errors in compression or decompression */
         // *******************************************
-        // printf("original: decompressed:\n");
-        // for (i = 0; i < length; i++) {
-        //     printf("%6d        %6d", dgaps[i], decoded[i]);
-        //     if (dgaps[i] != decoded[i]) {
-        //         printf("     wrong");
-        //     }
-        //     printf("\n");
-        // }
+         printf("original: decompressed:\n");
+         for (i = 0; i < length; i++) {
+             printf("%6d        %6d", dgaps[i], decoded[i]);
+             if (dgaps[i] != decoded[i]) {
+                 printf("     wrong");
+             }
+             printf("\n");
+         }
   
     }/* end read-in of a single list*/
     
