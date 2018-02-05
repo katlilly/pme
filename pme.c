@@ -240,14 +240,40 @@ uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *select
     /**** to do ****/
     i = 0;
     int shiftdistance = 0;
-    for (current = 0; current < topack; current++) {
+    for (current = 0; current < topack; current += 4) {
         *destination = *destination | raw[current] << shiftdistance;
-        
+        *(destination + 1) = *(destination + 1) | raw[current + 1] << shiftdistance;
+        *(destination + 2) = *(destination + 2) | raw[current + 2] << shiftdistance;
+        *(destination + 3) = *(destination + 3) | raw[current + 3] << shiftdistance;
         shiftdistance += table[which].bitwidths[i];
         i++;
     }
     return topack * vector_length;   /* return number of dgaps compressed into this word */
+    /**** at the moment, return value includes extra number in last word in 3/4 cases, need to change this return value ***/
 }
+
+/*** pme "vector" decompression - TO DO ***/
+uint32_t pme_vector_decompress(uint32_t word1, uint32_t word2 ,uint32_t word3, uint32_t word4, uint32_t selector, int offset)
+{
+    int i, bits, intsout = 0;
+    uint32_t mask;
+    for (i = 0; i < table[selector].intstopack; i++) {
+        bits = table[selector].bitwidths[i];
+        mask = pow(2, bits) - 1;
+        decoded[offset + intsout++] = word1 & mask;
+        decoded[offset + intsout++] = word2 & mask;
+        decoded[offset + intsout++] = word3 & mask;
+        decoded[offset + intsout++] = word4 & mask;
+        word1 = word1 >> bits;
+        word2 = word2 >> bits;
+        word3 = word3 >> bits;
+        word4 = word4 >> bits;
+        //printf("intsout: %d\n", intsout);
+
+    }
+    return intsout;
+}
+
 
 /* decompression with non-uniform selectors */
 uint32_t pme_decompress(uint32_t word, uint32_t selector, int offset)
@@ -284,7 +310,6 @@ void add_perm_to_table(int *array, int length)
     for (i = 0; i < length; i++) {
         table[rownumber].bitwidths[i] = array[i];
     }
-    
 }
 
 
@@ -604,6 +629,8 @@ int main(int argc, char *argv[])
         }
         listnumber++;
         
+        if (length > 10000) {
+        
         stats = getStats(listnumber, length);
         /* conversion to dgaps list happens within getStats function */
         
@@ -691,12 +718,12 @@ int main(int argc, char *argv[])
             compressedwords += 4;
         }
         meanencodedpme[listnumber] = meanencoded;
-        total_comp_length_pme +=compressedwords;
+        total_comp_length_pme += compressedwords;
         
         /* pme decompress - fills global array decoded[] */
         offset = 0;
-        for (i = 0; i < compressedwords; i++) {
-            offset += pme_decompress(compressed[i], selectors[i], offset);
+        for (i = 0; i < compressedwords; i += 4) {
+            offset += pme_vector_decompress(compressed[i], compressed[i+1], compressed[i+2], compressed[i+3], selectors[i], offset);
         }
         
         /* reset positions and compress with simple9 */
@@ -724,6 +751,7 @@ int main(int argc, char *argv[])
              }
              printf("\n");
          }
+        }
   
     }/* end read-in of a single list*/
     
