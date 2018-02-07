@@ -53,12 +53,12 @@ void print_littleendian64(uint32_t left, uint32_t right)
     printf("\n");
 }
 
-/* print an unsigned "128 bit int" in little-endian binary */
-void print_littleendian128(uint32_t one, uint32_t two, uint32_t three, uint32_t four)
+/* print an unsigned "128 bit int" in big-endian binary */
+void print_bigendian128(uint32_t one, uint32_t two, uint32_t three, uint32_t four)
 {
     int i;
-    for (i = 0; i < 32; i++) {
-        if (i % 8 == 0) {
+    for (i = 31; i >= 0; i--) {
+        if (i % 8 == 7) {
             printf(" ");
         }
         if (one & (1<<i)) {
@@ -67,9 +67,9 @@ void print_littleendian128(uint32_t one, uint32_t two, uint32_t three, uint32_t 
             printf("0");
         }
     }
-    printf("  ");
-    for (i = 0; i < 32; i++) {
-        if (i % 8 == 0) {
+    printf(" ");
+    for (i = 31; i >= 0; i--) {
+        if (i % 8 == 7) {
             printf(" ");
         }
         if (two & (1<<i)) {
@@ -78,9 +78,9 @@ void print_littleendian128(uint32_t one, uint32_t two, uint32_t three, uint32_t 
             printf("0");
         }
     }
-    printf("  ");
-    for (i = 0; i < 32; i++) {
-        if (i % 8 == 0) {
+    printf(" ");
+    for (i = 31; i >= 0; i--) {
+        if (i % 8 == 7) {
             printf(" ");
         }
         if (three & (1<<i)) {
@@ -89,9 +89,9 @@ void print_littleendian128(uint32_t one, uint32_t two, uint32_t three, uint32_t 
             printf("0");
         }
     }
-    printf("  ");
-    for (i = 0; i < 32; i++) {
-        if (i % 8 == 0) {
+    printf(" ");
+    for (i = 31; i >= 0; i--) {
+        if (i % 8 == 7) {
             printf(" ");
         }
         if (four & (1<<i)) {
@@ -143,26 +143,23 @@ int main(void)
     uint32_t *dgaps, *compressed, *decompressed;
     uint8_t *selectors;
 
+    /* write arbitrary data to dgaps array */
     dgaps = malloc(LENGTH * sizeof(*dgaps));
     for (i = 0; i < LENGTH; i++) {
         dgaps[i] = i + 1;
     }
-
     for (i = 0; i < LENGTH; i++) {
         //printf("%d%c", dgaps[i], i == LENGTH - 1 ? '\n' : ' ');
     }
     
-    for (i = 0; i < LENGTH; i++) {
-        //print_bigendian(dgaps[i]);
-        //print_littleendian(dgaps[i]);
-    }
     
     compressed = malloc(LENGTH * sizeof(*compressed));
     decompressed = malloc(LENGTH * sizeof(*decompressed));
+    selectors = malloc(LENGTH * sizeof(*selectors));
+
     
     /* for now just using symmetric selectors, value in this array
      represents the bitwidth */
-    selectors = malloc(LENGTH * sizeof(*selectors));
 //    for (i = 0; i < LENGTH; i++) {
 //        selectors[i] = 8;
 //    }
@@ -196,35 +193,40 @@ int main(void)
     /* write selectors and compress dgaps */
     int compressedwords = 0;
     int selector = 8; /* for now this means bitwidth */
-    selectors[compressedwords] = selector;
     
     int dgaps_per_128 = 128 / 8;
-    int compresseddgaps; /* compressed ints in one 128 bit word */
-    int compressedints = 0; /* total compressed ints */
+    int compresseddgaps; /* compressed ints in one 128 bit word (index within a compressed word) */
+    int compressedints = 0; /* total compressed ints (dgaps index) */
     int shiftdist = 0;
     int subword;
     while (compressedints < LENGTH) {
+        selectors[compressedwords] = selector;
         subword = 0;
         shiftdist = 0;
         compresseddgaps = 0;
         while (compresseddgaps < dgaps_per_128 && compressedints < LENGTH) {
-            compressed[compressedwords + subword++] |= (dgaps[compressedints++] << (8 * shiftdist));
-            //print_littleendian128(compressed[0], compressed[1], compressed[2], compressed[3]);
-            printf("subword: %d\n", subword);
+            /* below line is wrong, need to thing through position of numbers in 2,3, 4, subwords */
+            compressed[compressedwords + subword++] |= (dgaps[compressedints++] << (8 * shiftdist + subword * 4));
             if (subword == 4) {
                 subword = 0;
                 shiftdist++;
             }
             compresseddgaps++;
         }
-        printf("incrementing compressed words\n");
         compressedwords++;
     }
     
-    print_littleendian128(compressed[0], compressed[1], compressed[2], compressed[3]);
-    print_littleendian128(compressed[4], compressed[5], compressed[6], compressed[7]);
+    print_bigendian128(compressed[0], compressed[1], compressed[2], compressed[3]);
+    print_bigendian128(compressed[4], compressed[5], compressed[6], compressed[7]);
     
-
+    /* decompress to screen, in 4byte word order (1, 5, 9, 13, 2, 6, 10, etc) */
+    for (i = 0; i < compressedwords; i++) {
+        printf("%d, ", compressed[i] & 0xff);
+        printf("%d, ", (compressed[i] & 0xff00) >> 8);
+        printf("%d, ", (compressed[i] & 0xff0000) >> 16);
+        printf("%d, ", (compressed[i] & 0xff000000) >> 24);
+        printf("\n");
+    }
     
     /* decompress */
     
