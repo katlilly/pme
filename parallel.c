@@ -156,7 +156,12 @@ int main(void)
     compressed = malloc(LENGTH * sizeof(*compressed));
     decompressed = malloc(LENGTH * sizeof(*decompressed));
     selectors = malloc(LENGTH * sizeof(*selectors));
-
+    
+    /* this doesn't seem necessary, but why not? */
+    for (i = 0; i < LENGTH; i++) {
+        compressed[i] = 0;
+    }
+    
     
     /* for now just using symmetric selectors, value in this array
      represents the bitwidth */
@@ -191,42 +196,70 @@ int main(void)
 //    print_littleendian128(zero, two55, two55, ffffff);
 
     /* write selectors and compress dgaps */
-    int compressedwords = 0;
-    int selector = 8; /* for now this means bitwidth */
+//    int compressedwords = 0;
+//    int selector = 8; /* for now this means bitwidth */
+//
+//    int dgaps_per_128 = 128 / 8;
+//    int compresseddgaps; /* compressed ints in one 128 bit word (index within a compressed word) */
+//    int compressedints = 0; /* total compressed ints (dgaps index) */
+//    int shiftdist = 0;
+//    int subword;
+//    while (compressedints < LENGTH) {
+//        selectors[compressedwords] = selector;
+//        subword = 0;
+//        shiftdist = 0;
+//        compresseddgaps = 0;
+//        while (compresseddgaps < dgaps_per_128 && compressedints < LENGTH) {
+//            /* below line is wrong, need to think through position of numbers in 2,3, 4, subwords */
+//            printf("");
+//            compressed[compressedwords + subword] |=
+//            (dgaps[compressedints++] << (8 * shiftdist));
+//            subword++;
+//            if (subword == 4) {
+//                subword = 0;
+//                shiftdist++;
+//            }
+//            compresseddgaps++;
+//        }
+//        compressedwords++;
+//    }
     
-    int dgaps_per_128 = 128 / 8;
-    int compresseddgaps; /* compressed ints in one 128 bit word (index within a compressed word) */
-    int compressedints = 0; /* total compressed ints (dgaps index) */
-    int shiftdist = 0;
-    int subword;
-    while (compressedints < LENGTH) {
-        selectors[compressedwords] = selector;
-        subword = 0;
-        shiftdist = 0;
-        compresseddgaps = 0;
-        while (compresseddgaps < dgaps_per_128 && compressedints < LENGTH) {
-            /* below line is wrong, need to thing through position of numbers in 2,3, 4, subwords */
-            compressed[compressedwords + subword++] |= (dgaps[compressedints++] << (8 * shiftdist + subword * 4));
-            if (subword == 4) {
-                subword = 0;
-                shiftdist++;
-            }
-            compresseddgaps++;
+    
+    int intscompressed = 0; /* position in dgaps array */
+    //int word128 = 0; /* position in imaginary uint128_t array */
+    int word32 = 0; /* position in compressed array */
+    int shiftdist = 0; /* which byte in word32 */
+    while (intscompressed < LENGTH) {
+        compressed[word32] |= (dgaps[intscompressed] << shiftdist);
+        word32++;
+        intscompressed++;
+        if (word32 % 4 == 0 && shiftdist == 24) {
+            shiftdist = 0;
+            word32++;
+        } else if (word32 % 4 == 0) {
+            shiftdist += 8; /* change literal to bitwidth variable later? */
+            word32 -= 4;
         }
-        compressedwords++;
+
     }
+    
     
     print_bigendian128(compressed[0], compressed[1], compressed[2], compressed[3]);
     print_bigendian128(compressed[4], compressed[5], compressed[6], compressed[7]);
     
     /* decompress to screen, in 4byte word order (1, 5, 9, 13, 2, 6, 10, etc) */
-    for (i = 0; i < compressedwords; i++) {
+    for (i = 0; i < word32; i++) {
         printf("%d, ", compressed[i] & 0xff);
         printf("%d, ", (compressed[i] & 0xff00) >> 8);
         printf("%d, ", (compressed[i] & 0xff0000) >> 16);
         printf("%d, ", (compressed[i] & 0xff000000) >> 24);
         printf("\n");
     }
+    
+    for (i = 0; i < 12; i++) {
+        printf("%d\n", compressed[i]);
+    }
+    
     
     /* decompress */
     
