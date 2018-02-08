@@ -166,12 +166,10 @@ int main(void)
     
     /* compress into imaginary uint128_t array (using uint32_t array) */
     int intscompressed = 0; /* position in dgaps array */
-    //int word128 = 0; /* position in imaginary uint128_t array */
     int cindex = 0; /* position in compressed array */
     int shiftdist = 0; /* which byte in word32 */
     while (intscompressed < LENGTH) {
         compressed[cindex] |= (dgaps[intscompressed] << shiftdist);
-        printf("cindex: %d, current int to compress: %d\n", cindex, dgaps[intscompressed] << shiftdist);
         cindex++;
         intscompressed++;
         if (cindex % 4 == 0 && shiftdist == 24) {
@@ -183,23 +181,38 @@ int main(void)
     }
     
     
-    print_bigendian128(compressed[0], compressed[1], compressed[2], compressed[3]);
-    print_bigendian128(compressed[4], compressed[5], compressed[6], compressed[7]);
+    //(compressed[0], compressed[1], compressed[2], compressed[3]);
+    //print_bigendian128(compressed[4], compressed[5], compressed[6], compressed[7]);
     
     /* decompress to screen, in 4byte word order (1, 5, 9, 13, 2, 6, 10, etc) */
-    for (i = 0; i < cindex; i++) {
-        printf("%2d, ", compressed[i] & 0xff);
+    int j = 0;
+    for (i = 0; i < cindex + 4; i++) {
+        printf("%2d, ", (compressed[i] & 0xff));
         printf("%2d, ", (compressed[i] & 0xff00) >> 8);
         printf("%2d, ", (compressed[i] & 0xff0000) >> 16);
-        printf("%2d, ", (compressed[i] & 0xff000000) >> 24);
+        printf("%2d,  ", (compressed[i] & 0xff000000) >> 24);
         if (i % 4 == 3) printf("\n");
     }
-    printf("\n");
+    /* need to keep track of ints decompressed ? or while decompressed int |= zero? */
    
     
-    
     /* decompress */
+    int intsdecompressed = 0;
+    int mask = 0xff;
+    cindex = 0;
+    shiftdist = 0;
+    while (intsdecompressed < LENGTH) {
+        decompressed[intsdecompressed++] = ((compressed[cindex++] << shiftdist) & mask);
+        if (cindex % 4 == 0) {
+            cindex -= 4;
+            shiftdist += 8;
+//            mask = mask >> 8;
+        }
+    }
     
+    for (i = 0; i < 20; i++) {
+        printf("%d\n", decompressed[i]);
+    }
 
     free(dgaps);
     free(compressed);
