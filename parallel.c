@@ -148,10 +148,6 @@ int main(void)
     for (i = 0; i < LENGTH; i++) {
         dgaps[i] = i + 1;
     }
-    for (i = 0; i < LENGTH; i++) {
-        //printf("%d%c", dgaps[i], i == LENGTH - 1 ? '\n' : ' ');
-    }
-    
     
     compressed = malloc(LENGTH * sizeof(*compressed));
     decompressed = malloc(LENGTH * sizeof(*decompressed));
@@ -163,20 +159,21 @@ int main(void)
     }
     
     
-    
     /* compress into imaginary uint128_t array (using uint32_t array) */
-    int intscompressed = 0; /* position in dgaps array */
-    int cindex = 0; /* position in compressed array */
-    int shiftdist = 0; /* which byte in word32 */
+    /* for 128bit word, use wordlength = 4, for 512 use 16 etc*/
+    int wordlength = 8;         /* what multiple of 32bits in word*/
+    int intscompressed = 0;     /* position in dgaps array */
+    int cindex = 0;             /* position in compressed array */
+    int shiftdist = 0;          /* which byte in word32 */
     while (intscompressed < LENGTH) {
         compressed[cindex] |= (dgaps[intscompressed] << shiftdist);
         cindex++;
         intscompressed++;
-        if (cindex % 4 == 0 && shiftdist == 24) {
+        if (cindex % wordlength == 0 && shiftdist == 24) {
             shiftdist = 0;
-        } else if (cindex % 4 == 0) {
+        } else if (cindex % wordlength == 0) {
             shiftdist += 8; /* change literal to bitwidth variable later? */
-            cindex -= 4;
+            cindex -= wordlength;
         }
     }
     
@@ -191,12 +188,14 @@ int main(void)
         printf("%2d, ", (compressed[i] & 0xff00) >> 8);
         printf("%2d, ", (compressed[i] & 0xff0000) >> 16);
         printf("%2d,  ", (compressed[i] & 0xff000000) >> 24);
-        if (i % 4 == 3) printf("\n");
+        if (i % wordlength == wordlength - 1) printf("\n");
     }
-    /* need to keep track of ints decompressed ? or while decompressed int |= zero? */
+    /* need to keep track of ints decompressed ? or while decompressed int |= zero?
+     currently using cindex + 4 as end point (so will contain extra zeros at end
+     most of the time) */
    
     
-    /* decompress */
+    /* decompress - this not working yet */
     int intsdecompressed = 0;
     int mask = 0xff;
     cindex = 0;
@@ -210,9 +209,9 @@ int main(void)
         }
     }
     
-    for (i = 0; i < 20; i++) {
-        printf("%d\n", decompressed[i]);
-    }
+//    for (i = 0; i < 20; i++) {
+//        printf("%d\n", decompressed[i]);
+//    }
 
     free(dgaps);
     free(compressed);
