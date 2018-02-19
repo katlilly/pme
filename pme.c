@@ -150,7 +150,7 @@ uint32_t decompress(uint32_t word, int offset)
 
 /* pme compression function  */
 uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
-                    uint32_t integers_to_compress, selector table[])
+                    uint32_t integers_to_compress)
 {
     int i;
     uint32_t which;                             /* which row in selector array */
@@ -195,7 +195,7 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
 
 /* pme vector compression function  */
 uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
-                    uint32_t integers_to_compress, selector table[])
+                    uint32_t integers_to_compress)
 {
     int i, vector_length;
     uint32_t which;                             /* which row in selector array */
@@ -356,11 +356,11 @@ void generate_perms(int *x, int n, void callback(int *, int))
     } while (next_lex_perm(x, n) && rownumber - plainrows < 246);
     /* second condition leaves room for 10 symmetric selectors */
 }
-/* the literal in the last condition controls how many bits in the selector
+/*** the literal in the last condition controls how many bits in the selector
  10 rows are reserved for the symmetric selectors, so:
  246 means 8 bit selector
  54 means 6 bit selector
- 6 means 4 bit selector */
+ 6 means 4 bit selector ***/
 
 
 /* make combination selector for a list with given statistics */
@@ -592,15 +592,15 @@ listStats getStats(int number, int length)
 
 
 
-selector * make_table(int selectorbits, int *comb)
+void make_table(int selectorbits, int *comb)
 {
     int bitwidth = 1;                   /* table starts with the 1 bit row */
     int numbertopack = 32 / bitwidth;   /* 32 bit subwords */
     int rownumber = 0;
     int i, j;
-    int rows = pow(2, selectorbits);
-    printf("number of rows in selector table: %d\n", rows);
-    selector *table = malloc(rows * sizeof(*table));
+    //int rows = pow(2, selectorbits);
+    
+    //selector *table = malloc(rows * sizeof(*table));
     
     /* write the symmetric selectors that come before permutations */
     do {
@@ -647,7 +647,6 @@ selector * make_table(int selectorbits, int *comb)
         rownumber++;
         plainrows++; /* just for sanity check */
     }
-    return table;
 }
 
 
@@ -707,8 +706,8 @@ int main(int argc, char *argv[])
             permsarray[listnumber] = numperms;
             
             /*** how to declare this table ?? ***/
-            selector *table = make_table(8, comb);
-            
+            //selector *table = make_table(8, comb);
+            make_table(8, comb);
             
             //        if(length > 10000) {
             //            print_selector_table(table, rownumber);
@@ -733,7 +732,7 @@ int main(int argc, char *argv[])
             /* compress with pme table, and with 1 selector for every 128 bits */
             for (compressedints = 0; compressedints < length; compressedints += numencoded) {
                 numencoded = pme_vector_encode(compressed + compressedwords, dgaps + compressedints,
-                                               selectors + compressedwords, length - compressedints, table);
+                                               selectors + compressedwords, length - compressedints);
                 compressedwords += 4;
             }
             meanencodedpme[listnumber] = meanencoded;
