@@ -9,9 +9,7 @@
 #endif
 
 #define NUMBER_OF_DOCS (1024 * 1024 * 128)
-
-
-
+#define WORD_SIZE 128
 
 static uint32_t *postings_list;
 uint32_t *dgaps, *compressed, *decoded;
@@ -22,9 +20,9 @@ int *comb;      /* bitwidth combination array generated for each list */
 int topack;     /* number of ints in generated combination */
 int rownumber;  /* keep track of row number when generating selector table */
 int plainrows;  /* how many of the symmetric selectors have been used */
+int vectorlength;
 
-
-/* data structure for statistical information from a single list */
+/* data structure to hold statistical information from a single list */
 typedef struct
 {
     int listNumber;
@@ -41,8 +39,7 @@ typedef struct
 } listStats;
 
 
-/* data structure for each row of selector table
-   using 8 bit selectors so will declare a 256 row table */
+/* data structure for each row of selector table */
 typedef struct
 {
     int intstopack;
@@ -50,6 +47,8 @@ typedef struct
 } selector;
 
 
+/*** there is a line in add perm to table that needs to be changes when changing
+ selector table size ***/
 selector table[256];
 //selector table8bit[256];
 //selector table4bit[16];
@@ -79,9 +78,12 @@ s9selector s9table[] =
     {28, 1,  0xfffffff}
 };
 
+/* no longer using these numbers ? */
 //uint32_t number_of_selectors = sizeof(table8bit) / sizeof(*table8bit);
 uint32_t number_of_selectors = 256;
 
+
+/* return -1 if a less than b */
 int compare_ints(const void *a, const void *b) {
     const int *ia = (const int *) a;
     const int *ib = (const int *) b;
@@ -89,6 +91,7 @@ int compare_ints(const void *a, const void *b) {
 }
 
 
+/* return minimum, or first param if same */
 uint32_t min(uint32_t a, uint32_t b)
 {
     return a <= b ? a : b;
@@ -96,18 +99,18 @@ uint32_t min(uint32_t a, uint32_t b)
 
 
 /* simple 9 compression function */
-uint32_t s9encode(uint32_t *destination, uint32_t *raw, uint32_t integers_to_compress)
+uint32_t s9encode(uint32_t *destination, uint32_t *raw, uint32_t intstocompress)
 {
     uint32_t which;                             /* which element in selector array */
     int current;                                /* count of elements within each compressed word */
     int topack;                                 /* min of intstopack and what remains to compress */
     uint32_t *integer = raw;                    /* the current integer to compress */
-    uint32_t *end = raw + integers_to_compress; /* the end of the input array */
+    uint32_t *end = raw + intstocompress; /* the end of the input array */
     uint32_t code, shiftedcode;
     
     /* chose selector table row */
     for (which = 0; which < number_of_selectors; which++) {
-        topack = min(integers_to_compress, s9table[which].intstopack);
+        topack = min(intstocompress, s9table[which].intstopack);
         end = raw + topack;
         for (; integer < end; integer++) {
             if (fls(*integer) > s9table[which].bits)
@@ -147,10 +150,9 @@ uint32_t decompress(uint32_t word, int offset)
 }
 
 
-
-/* pme compression function  */
+/* pme compression function */
 uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
-                    uint32_t integers_to_compress)
+                    uint32_t intstocompress)
 {
     int i;
     uint32_t which;                             /* which row in selector array */
@@ -158,14 +160,14 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
     int current;                                /* count of elements within each compressed word */
     int topack;                                 /* min of ints/selector and remaining data to compress */
     uint32_t *integer = raw;                    /* the current integer to compress */
-    uint32_t *end = raw + integers_to_compress; /* the end of the input array */
+    uint32_t *end = raw + intstocompress;       /* the end of the input array */
     
     /* choose selector */
     uint32_t *start = integer;
     for (which = 0; which < rownumber; which++) {
         column = 0; /* go back to start of each row because of way some selectors may be ordered */
         integer = start; /* and also go back to first int that needs compressing */
-        topack = min(integers_to_compress, table[which].intstopack);
+        topack = min(intstocompress, table[which].intstopack);
         end = raw + topack;
         for (; integer < end; integer++) {
             if (fls(*integer) > table[which].bitwidths[column]) {
@@ -195,25 +197,24 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
 
 /* pme vector compression function  */
 uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
-                    uint32_t integers_to_compress)
+                    uint32_t intstocompress)
 {
     int i, vector_length;
-    uint32_t which;                             /* which row in selector array */
-    int column;                                 /* which element in bitwidth array */
-    int current;                                /* count of elements within each compressed word */
-    int topack;                                 /* min of ints/selector and remaining data to compress */
-    uint32_t *integer = raw;                    /* the current integer to compress */
-    uint32_t *end = raw + integers_to_compress; /* the end of the input array */
+    uint32_t which;                         /* which row in selector array */
+    int column;                             /* which element in bitwidth array */
+    int current;                            /* count of elements within each compressed word */
+    int topack;                             /* min of ints/selector and remaining data to compress */
+    uint32_t *integer = raw;                /* the current integer to compress */
+    uint32_t *end = raw + intstocompress;   /* the end of the input array */
     
-    /* set size of word - vector_length = 4 for a 128bit word */
-    vector_length = 4;
+    vectorlength = WORD_SIZE / 32;
     
     /* choose selector */
     uint32_t *start = integer;
     for (which = 0; which < rownumber; which++) {
         column = 0; /* go back to start of each row because of way some selectors may be ordered */
         integer = start; /* and also go back to first int that needs compressing */
-        topack = min(integers_to_compress, table[which].intstopack);
+        topack = min(intstocompress, table[which].intstopack);
         /*** need to rethink topack variable for vector instructions ***/
         end = raw + topack;
         for (; integer < end; integer += 4) {
@@ -598,9 +599,7 @@ void make_table(int selectorbits, int *comb)
     int numbertopack = 32 / bitwidth;   /* 32 bit subwords */
     int rownumber = 0;
     int i, j;
-    //int rows = pow(2, selectorbits);
-    
-    //selector *table = malloc(rows * sizeof(*table));
+    rownumber = 0;                      /* reset this to zero for each new table */
     
     /* write the symmetric selectors that come before permutations */
     do {
@@ -692,7 +691,7 @@ int main(int argc, char *argv[])
             exit(printf("i/o error\n"));
         }
         listnumber++;
-        
+        rownumber = 0;
         if (length > 10000) {
             
             stats = getStats(listnumber, length);
@@ -704,9 +703,8 @@ int main(int argc, char *argv[])
             
             /* record number of permutations for each list */
             permsarray[listnumber] = numperms;
+
             
-            /*** how to declare this table ?? ***/
-            //selector *table = make_table(8, comb);
             make_table(8, comb);
             
             //        if(length > 10000) {
