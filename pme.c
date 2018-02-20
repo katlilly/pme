@@ -214,7 +214,7 @@ uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *se
         // check that four ints fit, if they do, increment column and check next four ints
         printf("column %d ints: %d, %d, %d, %d\n", column, *dgap, *(dgap + 1), *(dgap + 2), *(dgap + 3));
         printf("trying selector table row %d\n", row);
-        if (fls(*dgap) <= table[row].bitwidths[column]) {
+        if (fls(*dgap) <= table[row].bitwidths[column]) { /***add condition for each of four**/
             if (column >= table[row].intstopack) {
           //      printf("reached end of bitwidths array with selector %d\n", row);
                 break;
