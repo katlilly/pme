@@ -208,32 +208,54 @@ uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *se
     uint32_t *end = source + intstocompress;/* don't overshoot end of dgap array */
     int vectorlength = 4;
     
-    /* (break causes loop to be exited, continue goes to next iteration of loop) */
-    /* choose selector */
-    while (dgap < end && row < rownumber) { /* <= ? */
-        // check that four ints fit, if they do, increment column and check next four ints
-        printf("column %d ints: %d, %d, %d, %d\n", column, *dgap, *(dgap + 1), *(dgap + 2), *(dgap + 3));
-        printf("trying selector table row %d\n", row);
-        if (fls(*dgap) <= table[row].bitwidths[column]) { /***add condition for each of four**/
-            if (column >= table[row].intstopack) {
-          //      printf("reached end of bitwidths array with selector %d\n", row);
-                break;
+    while (dgap < end && row < rownumber && comped < table[row].intstopack) { /* rownumber is a global variable that countains # of selectors */
+        if (fls(*dgap) <= table[row].bitwidths[column] && /* if current ints fit in current column */
+            fls(*(dgap + 1)) <= table[row].bitwidths[column] &&
+            fls(*(dgap + 2)) <= table[row].bitwidths[column] &&
+            fls(*(dgap + 3)) <= table[row].bitwidths[column]) {
+            if (column < table[row].intstopack) { /* if the selector is not full */
+                column++;
+                comped += vectorlength;
+                dgap += vectorlength;
             }
-            column++; //increment column because previous set of ints fits
-        //    printf("column: %d\n", column);
-            dgap += vectorlength; // move pointer to next four ints to check (* 4 bytes??)
         } else {
-            row++;          /* if any int doesn't fit, try next selector */
-      //      printf("row: %d\n", row);
-            column = 0;     /* and return to first column */
-            dgap = source;  /* and return to start of source array */
+            column = 0;
+            comped = 0;
+            row++;
+            dgap = source;
         }
     }
+    /* (break causes loop to be exited, continue goes to next iteration of loop) */
+    /* choose selector */
+//    while (dgap < end && row < rownumber) { /* <= ? */
+//        // check that four ints fit, if they do, increment column and check next four ints
+//        //printf("column %d ints: %d, %d, %d, %d\n", column, *dgap, *(dgap + 1), *(dgap + 2), *(dgap + 3));
+//        //printf("trying selector table row %d\n", row);
+//        /* do below in a for loop from zero to vectorlength - 1 */
+//        if (fls(*dgap) <= table[row].bitwidths[column] &&
+//            fls(*(dgap + 1)) <= table[row].bitwidths[column] &&
+//            fls(*(dgap + 2)) <= table[row].bitwidths[column] &&
+//            fls(*(dgap + 3)) <= table[row].bitwidths[column] &&
+//            (column <= table[row].intstopack)) { /* and if selector not full yet */
+//            printf("row %d, column %d\n", row, column);
+//            column++;       /* increment column because previous set of ints fits */
+//            dgap += vectorlength; /* move pointer to next four ints to check */
+//        } else {
+//            if (column < table[row].intstopack) { /* if exited not because selector full */
+//                row++;          /* if any int doesn't fit, try next selector */
+//                column = 0;     /* and return to first column */
+//                dgap = source;  /* and return to start of source array */
+//
+//
+//            }
+//            /* don't do above three lines if we exited because selector was full */
+//        } /* end if-else */
+//    } /* end while */
     
     //printf("reached end of dgaps to compress, %d ints\n", comped);
-    
-    printf("chose selector %d\n\n\n", row);
-    
+
+printf("chose selector %d\n\n\n", row);
+
     return min(table[row].intstopack, intstocompress);
 }
 
@@ -738,7 +760,7 @@ int main(int argc, char *argv[])
         }
         listnumber++;
         rownumber = 0;
-        if (listnumber == 96) {
+        if (listnumber == 445000) {
             length = 100;
             printf("%d\n", length);
             
