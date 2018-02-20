@@ -195,6 +195,50 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
 }
 
 
+/* start from scratch pme vector compression */
+/* return number of ints compressed into this word, fills global arrays compressed and selectors as side effects */
+/* this function is run in a loop until all dgaps are compressed, compresses one "word" (for now 4 32bit words)
+ at a time and returns number of ints compressed in that word */
+uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *selctors, uint32_t intstocompress)
+{
+    int i;
+    int row = 0, column = 0;                /* place in selector table */
+    uint32_t *dgap = source;                /* pointer to current integer to compress */
+    int comped = 0;                         /* count of numbers compressed so far */
+    uint32_t *end = source + intstocompress;/* don't overshoot end of dgap array */
+    int vectorlength = 4;
+    
+    /* (break causes loop to be exited, continue goes to next iteration of loop) */
+    /* choose selector */
+    while (dgap < end && row < rownumber) { /* <= ? */
+        // check that four ints fit, if they do, increment column and check next four ints
+        printf("column %d ints: %d, %d, %d, %d\n", column, *dgap, *(dgap + 1), *(dgap + 2), *(dgap + 3));
+        printf("trying selector table row %d\n", row);
+        if (fls(*dgap) <= table[row].bitwidths[column]) {
+            if (column >= table[row].intstopack) {
+          //      printf("reached end of bitwidths array with selector %d\n", row);
+                break;
+            }
+            column++; //increment column because previous set of ints fits
+        //    printf("column: %d\n", column);
+            dgap += vectorlength; // move pointer to next four ints to check (* 4 bytes??)
+        } else {
+            row++;          /* if any int doesn't fit, try next selector */
+      //      printf("row: %d\n", row);
+            column = 0;     /* and return to first column */
+            dgap = source;  /* and return to start of source array */
+        }
+    }
+    
+    //printf("reached end of dgaps to compress, %d ints\n", comped);
+    
+    printf("chose selector %d\n\n\n", row);
+    
+    return min(table[row].intstopack, intstocompress);
+}
+
+
+
 /* pme vector compression function  */
 uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
                     uint32_t intstocompress)
@@ -211,13 +255,14 @@ uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *select
     
     /* choose selector */
     uint32_t *start = integer;
+    //column = 0;
     for (which = 0; which < rownumber; which++) {
         column = 0; /* go back to start of each row because of way some selectors may be ordered */
         integer = start; /* and also go back to first int that needs compressing */
         topack = min(intstocompress, table[which].intstopack);
-        /*** need to rethink topack variable for vector instructions ***/
+        /*** need to rethink topack variable for vector instructions? ***/
         end = raw + topack;
-        for (; integer < end; integer += 4) {
+        for (; integer < end; integer += vectorlength) {
             if (fls(*integer) > table[which].bitwidths[column] ||
                 fls(*(integer + 1)) > table[which].bitwidths[column] ||
                 fls(*(integer + 2)) > table[which].bitwidths[column] ||
@@ -225,12 +270,14 @@ uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *select
                 /*** need extra conditons here to check whether there are four ints there? ***/
                 break; /* increment 'which' if current integer can't fit in this many bits */
             }
+            printf("row: %d. column: %d\n", which, column);
             column++;
         }
         if (integer >= end) {
             break;
         }
     }
+    printf("chose selector %d\n", which);
     
     /* set four 32bit ints to zero */
     *destination = 0;
@@ -495,7 +542,7 @@ void print_selector_table(selector table[], int rowsfilled)
     int i, j;
     printf("selector table:\n");
     for (i = 0; i < rowsfilled; i++) {
-        printf("ints to pack: %d, Bitwidths: ", table[i].intstopack);
+        printf("%d, ints: %d, Bitwidths: ", i, table[i].intstopack);
         for (j = 0; j < table[i].intstopack; j++) {
             printf("%d, ", table[i].bitwidths[j]);
         }
@@ -597,7 +644,6 @@ void make_table(int selectorbits, int *comb)
 {
     int bitwidth = 1;                   /* table starts with the 1 bit row */
     int numbertopack = 32 / bitwidth;   /* 32 bit subwords */
-    int rownumber = 0;
     int i, j;
     rownumber = 0;                      /* reset this to zero for each new table */
     
@@ -692,10 +738,23 @@ int main(int argc, char *argv[])
         }
         listnumber++;
         rownumber = 0;
-        if (length > 10000) {
+        if (listnumber == 96) {
+            length = 100;
+            printf("%d\n", length);
+            
             
             stats = getStats(listnumber, length);
             /*** conversion to dgaps list happens within getStats function ***/
+            
+            for (i = 0; i < length; i++) {
+                printf("%d, ", dgaps[i]);
+            }
+            printf("\n");
+            
+            for (i = 0; i < length; i++) {
+                printf("%d, ", fls(dgaps[i]));
+            }
+            printf("\n");
             
             /* generate the bitwidth combination to use to make the permutations */
             comb = make_comb(stats.mode, stats.modFrac, stats.lowexcp,
@@ -706,10 +765,10 @@ int main(int argc, char *argv[])
 
             
             make_table(8, comb);
+            /* why no permutations in this table? */
             
-            //        if(length > 10000) {
-            //            print_selector_table(table, rownumber);
-            //        }
+            print_selector_table(table, rownumber);
+            
             
             sumencoded = 0;
             numencoded = 0;
@@ -729,7 +788,7 @@ int main(int argc, char *argv[])
             
             /* compress with pme table, and with 1 selector for every 128 bits */
             for (compressedints = 0; compressedints < length; compressedints += numencoded) {
-                numencoded = pme_vector_encode(compressed + compressedwords, dgaps + compressedints,
+                numencoded = pme_vector_encode2(compressed + compressedwords, dgaps + compressedints,
                                                selectors + compressedwords, length - compressedints);
                 compressedwords += 4;
             }
@@ -767,6 +826,7 @@ int main(int argc, char *argv[])
             //             }
             //             printf("\n");
             //         }
+            return 0;
         }
         
     }/* end read-in of a single list*/
