@@ -98,6 +98,21 @@ uint32_t min(uint32_t a, uint32_t b)
 }
 
 
+/* print an unsigned 32 bit int in big-endian binary */
+void print_bigendian32(uint32_t num)
+{
+    int i;
+    for (i = 31; i >= 0; i--) {
+        if (num & (1<<i)) {
+            printf("1");
+        } else {
+            printf("0");
+        }
+    }
+    printf("\n");
+}
+
+
 /* simple 9 compression function */
 uint32_t s9encode(uint32_t *destination, uint32_t *raw, uint32_t intstocompress)
 {
@@ -199,21 +214,23 @@ uint32_t pme_encode(uint32_t *destination, uint32_t *raw, uint8_t *selectors,
 /* return number of ints compressed into this word, fills global arrays compressed and selectors as side effects */
 /* this function is run in a loop until all dgaps are compressed, compresses one "word" (for now 4 32bit words)
  at a time and returns number of ints compressed in that word */
-uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *selctors, uint32_t intstocompress)
+uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *selectors, uint32_t intstocompress)
 {
-    int i;
-    int row = 0, column = 0;                /* place in selector table */
+    int i, row = 0, column = 0;             /* place in selector table */
     uint32_t *dgap = source;                /* pointer to current integer to compress */
-    int comped = 0;                         /* count of numbers compressed so far */
+    int comped = 0;                         /* count of integers compressed so far */
     uint32_t *end = source + intstocompress;/* don't overshoot end of dgap array */
-    int vectorlength = 4;
+    vectorlength = 4;                       /* set size of "word" to 128 bits */
+    int current;
     
-    while (dgap < end && row < rownumber && comped < table[row].intstopack) { /* rownumber is a global variable that countains # of selectors */
-        if (fls(*dgap) <= table[row].bitwidths[column] && /* if current ints fit in current column */
+    /* chose selector */
+    while (dgap < end && row < rownumber && comped < table[row].intstopack) {
+        /** how to put below conditions in a loop from zero to vectorlength ?? **/
+        if (fls(*dgap) <= table[row].bitwidths[column] && /* current ints fit in current column */
             fls(*(dgap + 1)) <= table[row].bitwidths[column] &&
             fls(*(dgap + 2)) <= table[row].bitwidths[column] &&
             fls(*(dgap + 3)) <= table[row].bitwidths[column]) {
-            if (column < table[row].intstopack) { /* if the selector is not full */
+            if (column < table[row].intstopack) { /* selector is not full */
                 column++;
                 comped += vectorlength;
                 dgap += vectorlength;
@@ -225,37 +242,25 @@ uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *se
             dgap = source;
         }
     }
-    /* (break causes loop to be exited, continue goes to next iteration of loop) */
-    /* choose selector */
-//    while (dgap < end && row < rownumber) { /* <= ? */
-//        // check that four ints fit, if they do, increment column and check next four ints
-//        //printf("column %d ints: %d, %d, %d, %d\n", column, *dgap, *(dgap + 1), *(dgap + 2), *(dgap + 3));
-//        //printf("trying selector table row %d\n", row);
-//        /* do below in a for loop from zero to vectorlength - 1 */
-//        if (fls(*dgap) <= table[row].bitwidths[column] &&
-//            fls(*(dgap + 1)) <= table[row].bitwidths[column] &&
-//            fls(*(dgap + 2)) <= table[row].bitwidths[column] &&
-//            fls(*(dgap + 3)) <= table[row].bitwidths[column] &&
-//            (column <= table[row].intstopack)) { /* and if selector not full yet */
-//            printf("row %d, column %d\n", row, column);
-//            column++;       /* increment column because previous set of ints fits */
-//            dgap += vectorlength; /* move pointer to next four ints to check */
-//        } else {
-//            if (column < table[row].intstopack) { /* if exited not because selector full */
-//                row++;          /* if any int doesn't fit, try next selector */
-//                column = 0;     /* and return to first column */
-//                dgap = source;  /* and return to start of source array */
-//
-//
-//            }
-//            /* don't do above three lines if we exited because selector was full */
-//        } /* end if-else */
-//    } /* end while */
     
-    //printf("reached end of dgaps to compress, %d ints\n", comped);
-
-printf("chose selector %d\n\n\n", row);
-
+    /* put selector into selector array (given pointer to current selector) */
+    *selectors = 0 | row;
+    
+    /* compress one long "word" (for now 4 32bit words) */
+    for (i = 0; i < vectorlength; i++) {
+        *(destination + i) = 0;
+    }
+    int j = 0, shiftdistance = 0;
+    for (current = 0; current < topack; current += 4) {
+        for (i = 0; i < vectorlength; i++) {
+            *(destination + i) = *(destination + i) | source[current + i] << shiftdistance;
+        }
+        shiftdistance += table[row].bitwidths[j];
+        j++;
+    }
+    
+    /* doesn't matter that 'comped' doesn't keep track of true number of ints compressed,
+     because below line handles it */
     return min(table[row].intstopack, intstocompress);
 }
 
@@ -769,7 +774,7 @@ int main(int argc, char *argv[])
             /*** conversion to dgaps list happens within getStats function ***/
             
             for (i = 0; i < length; i++) {
-                printf("%d, ", dgaps[i]);
+                printf("%u, ", dgaps[i]);
             }
             printf("\n");
             
@@ -810,12 +815,22 @@ int main(int argc, char *argv[])
             
             /* compress with pme table, and with 1 selector for every 128 bits */
             for (compressedints = 0; compressedints < length; compressedints += numencoded) {
-                numencoded = pme_vector_encode2(compressed + compressedwords, dgaps + compressedints,
+                numencoded = pme_vector_encode2(compressed + (vectorlength * compressedwords), dgaps + compressedints,
                                                selectors + compressedwords, length - compressedints);
-                compressedwords += 4;
+                compressedwords++;
             }
             meanencodedpme[listnumber] = meanencoded;
             total_comp_length_pme += compressedwords;
+            
+            for (i = 0; i < compressedwords; i++) {
+                printf("%d, ", selectors[i]);
+            }
+            printf("\n");
+            
+            for (i = 0; i < compressedwords; i++) {
+                print_bigendian32(compressed[i]);
+            }
+            
             
             /* pme decompress - fills global array decoded[] */
             offset = 0;
