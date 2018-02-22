@@ -246,18 +246,36 @@ uint32_t pme_vector_encode2(uint32_t *destination, uint32_t *source, uint8_t *se
     /* put selector into selector array (given pointer to current selector) */
     *selectors = 0 | row;
     
-    /* compress one long "word" (for now 4 32bit words) */
+    /* set destination bits to all zeros */
     for (i = 0; i < vectorlength; i++) {
         *(destination + i) = 0;
     }
-    int j = 0, shiftdistance = 0;
-    for (current = 0; current < topack; current += 4) {
-        for (i = 0; i < vectorlength; i++) {
-            *(destination + i) = *(destination + i) | source[current + i] << shiftdistance;
+    
+    current = 0;
+    int number;
+    int j;
+    int shiftdist = 0;
+    /* current index is current + (4 * j) + i */
+    for (i = 0; i < table[row].intstopack; i++) {
+        for (j = 0; j < vectorlength; j++) {
+            number = source[current + 4 * j + i] << shiftdist;
+            *(destination + i) = *(destination +i) | number;
+            //print_bigendian(*destination);
         }
-        shiftdistance += table[row].bitwidths[j];
-        j++;
+        shiftdist += table[row].bitwidths[i];
     }
+    
+    
+    
+    /* compress one long "word" (for now 4 32bit words) */
+//    int j = 0, shiftdistance = 0;
+//    for (current = 0; current < topack; current += 4) {
+//        for (i = 0; i < vectorlength; i++) {
+//            *(destination + i) = *(destination + i) | source[current + i] << shiftdistance;
+//        }
+//        shiftdistance += table[row].bitwidths[j];
+//        j++;
+//    }
     
     /* doesn't matter that 'comped' doesn't keep track of true number of ints compressed,
      because below line handles it */
@@ -428,7 +446,7 @@ void generate_perms(int *x, int n, void callback(int *, int))
         if (callback) callback(x, n);
         numperms++;
         rownumber++;
-    } while (next_lex_perm(x, n) && rownumber - plainrows < 246);
+    } while (next_lex_perm(x, n) && rownumber - plainrows < 245);
     /* second condition leaves room for 10 symmetric selectors */
 }
 /*** the literal in the last condition controls how many bits in the selector
@@ -765,23 +783,23 @@ int main(int argc, char *argv[])
         }
         listnumber++;
         rownumber = 0;
-        if (listnumber == 445000) {
-            length = 100;
+        if (listnumber == 96) {
+            //length = 100;
             printf("%d\n", length);
             
             
             stats = getStats(listnumber, length);
             /*** conversion to dgaps list happens within getStats function ***/
             
-            for (i = 0; i < length; i++) {
-                printf("%u, ", dgaps[i]);
-            }
-            printf("\n");
-            
-            for (i = 0; i < length; i++) {
-                printf("%d, ", fls(dgaps[i]));
-            }
-            printf("\n");
+//            for (i = 0; i < length; i++) {
+//                printf("%u, ", dgaps[i]);
+//            }
+//            printf("\n");
+//
+//            for (i = 0; i < length; i++) {
+//                printf("%d, ", fls(dgaps[i]));
+//            }
+//            printf("\n");
             
             /* generate the bitwidth combination to use to make the permutations */
             comb = make_comb(stats.mode, stats.modFrac, stats.lowexcp,
@@ -792,7 +810,6 @@ int main(int argc, char *argv[])
 
             
             make_table(8, comb);
-            /* why no permutations in this table? */
             
             print_selector_table(table, rownumber);
             
@@ -823,7 +840,7 @@ int main(int argc, char *argv[])
             total_comp_length_pme += compressedwords;
             
             for (i = 0; i < compressedwords; i++) {
-                printf("%d, ", selectors[i]);
+                //if (selectors[i] < 250) printf("%d\n", selectors[i]);
             }
             printf("\n");
             
