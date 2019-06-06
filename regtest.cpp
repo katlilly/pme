@@ -51,14 +51,14 @@ int main(int argc, char *argv[])
     */
     for (int i = 0; i < length; i++)
       if (bitwidths[i] != bitwidths2[i])
-	exit(printf("list %d, bitwidth calculation error\n", listnumber));
+	exit(printf("list %u, bitwidth calculation error\n", listnumber));
     
     /*
       Calculate mean bitwidth and stddev for each list, which will be
       piped to a file to compare with known correct results
     */
     ls.calculate_stats(bitwidths, length);
-    printf("length: %5d, mean bitwidth: %.2f +/- %.2f\n", length, ls.mean, ls.stdev);
+    printf("length: %5u, mean bitwidth: %.2f +/- %.2f\n", length, ls.mean, ls.stdev);
     
     
    

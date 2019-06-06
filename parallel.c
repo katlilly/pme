@@ -182,12 +182,12 @@ int main(void)
     //print_bigendian128(compressed[4], compressed[5], compressed[6], compressed[7]);
     
     /* decompress to screen, in 4byte word order (1, 5, 9, 13, 2, 6, 10, etc) */
-    int j = 0;
+    //int j = 0;
     for (i = 0; i < cindex + 4; i++) {
-        printf("%2d, ", (compressed[i] & 0xff));
-        printf("%2d, ", (compressed[i] & 0xff00) >> 8);
-        printf("%2d, ", (compressed[i] & 0xff0000) >> 16);
-        printf("%2d,  ", (compressed[i] & 0xff000000) >> 24);
+        printf("%2u, ", (compressed[i] & 0xff));
+        printf("%2u, ", (compressed[i] & 0xff00) >> 8);
+        printf("%2u, ", (compressed[i] & 0xff0000) >> 16);
+        printf("%2u,  ", (compressed[i] & 0xff000000) >> 24);
         if (i % wordlength == wordlength - 1) printf("\n");
     }
     /* need to keep track of ints decompressed ? or while decompressed int |= zero?

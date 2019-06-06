@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     }
   }
 
+  delete [] postings_list;
   fclose(output);
   return 0;
 }

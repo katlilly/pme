@@ -99,6 +99,8 @@ void ListStats::calculate_stats(int *bitwidths, int length)
   for (int i = 19; i < 33; i++)
     if (width_freqs[i])
       printf("found a bitwidth greater than 18, this could be a problem\n");
+
+  delete [] width_freqs;
 }
 
 

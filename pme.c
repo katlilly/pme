@@ -35,7 +35,7 @@ typedef struct
     double modFrac;
     double lowFrac;
     double highFrac;
-    int numPerms;
+  //int numPerms;
 } listStats;
 
 
@@ -120,20 +120,20 @@ uint32_t s9encode(uint32_t *destination, uint32_t *raw, uint32_t intstocompress)
     int current;                                /* count of elements within each compressed word */
     int topack;                                 /* min of intstopack and what remains to compress */
     uint32_t *integer = raw;                    /* the current integer to compress */
-    uint32_t *end = raw + intstocompress; /* the end of the input array */
+    uint32_t *end = raw + intstocompress;       /* the end of the input array */
     uint32_t code, shiftedcode;
     
     /* chose selector table row */
-    for (which = 0; which < number_of_selectors; which++) {
-        topack = min(intstocompress, s9table[which].intstopack);
-        end = raw + topack;
-        for (; integer < end; integer++) {
-            if (fls(*integer) > s9table[which].bits)
-                break;
-        }
-        if (integer >= end) {
-            break;
-        }
+    for (which = 0; which < number_of_selectors; which++)
+    {
+      topack = min(intstocompress, s9table[which].intstopack);
+      end = raw + topack;
+      for (; integer < end; integer++)
+      	if (fls(*integer) > s9table[which].bits)
+	  break;
+      
+      if (integer >= end)
+	break;
     }
     
     /* pack one word */
@@ -322,7 +322,7 @@ uint32_t pme_vector_encode(uint32_t *destination, uint32_t *raw, uint8_t *select
             break;
         }
     }
-    printf("chose selector %d\n", which);
+    printf("chose selector %u\n", which);
     
     /* set four 32bit ints to zero */
     *destination = 0;
@@ -680,6 +680,7 @@ listStats getStats(int number, int length)
     result.lowFrac = (double) lowoutliers / length;
     result.highFrac = (double) highoutliers / length;
     
+    free(bitwidths);
     return result;
 }
 
@@ -785,7 +786,7 @@ int main(int argc, char *argv[])
         rownumber = 0;
         if (listnumber == 96) {
             //length = 100;
-            printf("%d\n", length);
+            printf("%u\n", length);
             
             
             stats = getStats(listnumber, length);
@@ -850,7 +851,7 @@ int main(int argc, char *argv[])
             
             
             /* pme decompress - fills global array decoded[] */
-            offset = 0;
+            //offset = 0;
             for (i = 0; i < compressedwords; i += 4) {
                 //offset += pme_vector_decompress(compressed[i], compressed[i+1], compressed[i+2], compressed[i+3], selectors[i], offset, table);
             }
@@ -880,6 +881,7 @@ int main(int argc, char *argv[])
             //             }
             //             printf("\n");
             //         }
+	    free(meanencodedsimple9);
             return 0;
         }
         
@@ -897,6 +899,7 @@ int main(int argc, char *argv[])
     free(postings_list);
     free(compressed);
     free(decoded);
+    fclose(fp);
     
     return 0;
 }

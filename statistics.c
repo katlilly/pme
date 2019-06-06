@@ -79,9 +79,10 @@ int next_lex_perm(int *a, int n) {
    - taken directly from rosettacode */
 void generate_perms(int *x, int n, void callback(int *, int))
 {
-    do {
-        if (callback) callback(x, n);
-        numperms++;
+    do
+    {
+      if (callback) callback(x, n);
+      numperms++;
     } while (next_lex_perm(x, n));
 }
 
@@ -293,7 +294,8 @@ listStats getStats(int number, int length)
     tempList.modFrac = (double) bitwidths[mode] / length;
     tempList.lowFrac = (double) lowoutliers / length;
     tempList.highFrac = (double) highoutliers / length;
-    
+
+    free(dgaps);
     return tempList;
 }
 
@@ -380,6 +382,7 @@ int main(int argc, char *argv[])
 
     double frac8bit = (double) eightbitselectorsum / (eightbitselectorsum + bigselectors);
     printf("%.5f\n", frac8bit);
-    
+
+    fclose(fp);
     return 0;
 }
