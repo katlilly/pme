@@ -14,4 +14,4 @@ install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
 
 script:
-  - ./regressiontest.sh
+  - ./regressiontests.sh
