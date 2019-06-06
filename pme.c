@@ -881,7 +881,9 @@ int main(int argc, char *argv[])
             //             }
             //             printf("\n");
             //         }
+	    
 	    free(meanencodedsimple9);
+	    fclose(fp);
             return 0;
         }
         
