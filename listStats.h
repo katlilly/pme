@@ -30,7 +30,6 @@ class ListStats
      calculate statistics of a list for use in selector generator
    */
   void calculate_stats(int *bitwidths, int length);
-
   void docnums_to_dgaps(int *dest, int *source, int length);
   void dgaps_to_bitwidths(int *dest, int *source, int length);
   void docnums_to_dgap_bitwidths(int *dest, int *source, int length);
