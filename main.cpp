@@ -39,7 +39,11 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgaps(dgaps, postings_list, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
-    ls.calculate_stats(bitwidths, length);
+    if (listnumber)
+      {
+	ls.calculate_stats(bitwidths, length);
+	
+      }
     
     if (listnumber == 766)// || listnumber == 64)
     {

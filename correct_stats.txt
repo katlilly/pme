@@ -1,0 +1,355 @@
+
+length: 1, mean: 17.00, stdev: 0.00
+mode: 17, 95th: 17, next-most-common-low: 17, range: 1
+highest: 17, lowest: 17, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 17.00, stdev: 0.00
+mode: 17, 95th: 17, next-most-common-low: 17, range: 1
+highest: 17, lowest: 17, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 17.00, stdev: 0.00
+mode: 17, 95th: 17, next-most-common-low: 17, range: 1
+highest: 17, lowest: 17, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 2, mean: 15.50, stdev: 2.50
+mode: 18, 95th: 18, next-most-common-low: 13, range: 6
+highest: 18, lowest: 13, totalrange: 6
+Modal fraction: 0.50, Low fraction: 0.50, High fraction: 0.00
+
+length: 1, mean: 11.00, stdev: 0.00
+mode: 11, 95th: 11, next-most-common-low: 11, range: 1
+highest: 11, lowest: 11, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 14.00, stdev: 0.00
+mode: 14, 95th: 14, next-most-common-low: 14, range: 1
+highest: 14, lowest: 14, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 15.00, stdev: 0.00
+mode: 15, 95th: 15, next-most-common-low: 15, range: 1
+highest: 15, lowest: 15, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 17.00, stdev: 0.00
+mode: 17, 95th: 17, next-most-common-low: 17, range: 1
+highest: 17, lowest: 17, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 2, mean: 16.50, stdev: 0.50
+mode: 17, 95th: 17, next-most-common-low: 16, range: 2
+highest: 17, lowest: 16, totalrange: 2
+Modal fraction: 0.50, Low fraction: 0.50, High fraction: 0.00
+
+length: 1, mean: 15.00, stdev: 0.00
+mode: 15, 95th: 15, next-most-common-low: 15, range: 1
+highest: 15, lowest: 15, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 2, mean: 14.50, stdev: 3.50
+mode: 18, 95th: 18, next-most-common-low: 11, range: 8
+highest: 18, lowest: 11, totalrange: 8
+Modal fraction: 0.50, Low fraction: 0.50, High fraction: 0.00
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 2, mean: 16.00, stdev: 1.00
+mode: 17, 95th: 17, next-most-common-low: 15, range: 3
+highest: 17, lowest: 15, totalrange: 3
+Modal fraction: 0.50, Low fraction: 0.50, High fraction: 0.00
+
+length: 2, mean: 12.50, stdev: 3.50
+mode: 16, 95th: 16, next-most-common-low: 9, range: 8
+highest: 16, lowest: 9, totalrange: 8
+Modal fraction: 0.50, Low fraction: 0.50, High fraction: 0.00
+
+length: 3, mean: 14.33, stdev: 1.25
+mode: 16, 95th: 16, next-most-common-low: 14, range: 3
+highest: 16, lowest: 13, totalrange: 4
+Modal fraction: 0.33, Low fraction: 0.67, High fraction: 0.00
+
+length: 3, mean: 15.67, stdev: 0.47
+mode: 16, 95th: 16, next-most-common-low: 15, range: 2
+highest: 16, lowest: 15, totalrange: 2
+Modal fraction: 0.67, Low fraction: 0.33, High fraction: 0.00
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 5, mean: 14.60, stdev: 0.80
+mode: 14, 95th: 16, next-most-common-low: 14, range: 3
+highest: 16, lowest: 14, totalrange: 3
+Modal fraction: 0.60, Low fraction: 0.00, High fraction: 0.40
+
+length: 3, mean: 16.33, stdev: 0.94
+mode: 17, 95th: 17, next-most-common-low: 15, range: 3
+highest: 17, lowest: 15, totalrange: 3
+Modal fraction: 0.67, Low fraction: 0.33, High fraction: 0.00
+
+length: 4, mean: 14.25, stdev: 1.79
+mode: 14, 95th: 17, next-most-common-low: 12, range: 6
+highest: 17, lowest: 12, totalrange: 6
+Modal fraction: 0.50, Low fraction: 0.25, High fraction: 0.25
+
+length: 1, mean: 17.00, stdev: 0.00
+mode: 17, 95th: 17, next-most-common-low: 17, range: 1
+highest: 17, lowest: 17, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 3, mean: 15.67, stdev: 1.89
+mode: 17, 95th: 17, next-most-common-low: 13, range: 5
+highest: 17, lowest: 13, totalrange: 5
+Modal fraction: 0.67, Low fraction: 0.33, High fraction: 0.00
+
+length: 3, mean: 14.33, stdev: 2.49
+mode: 17, 95th: 17, next-most-common-low: 15, range: 3
+highest: 17, lowest: 11, totalrange: 7
+Modal fraction: 0.33, Low fraction: 0.67, High fraction: 0.00
+
+length: 6, mean: 13.83, stdev: 1.77
+mode: 15, 95th: 16, next-most-common-low: 14, range: 3
+highest: 16, lowest: 11, totalrange: 6
+Modal fraction: 0.33, Low fraction: 0.50, High fraction: 0.17
+
+length: 5, mean: 15.20, stdev: 0.75
+mode: 16, 95th: 16, next-most-common-low: 15, range: 2
+highest: 16, lowest: 14, totalrange: 3
+Modal fraction: 0.40, Low fraction: 0.60, High fraction: 0.00
+
+length: 7, mean: 14.43, stdev: 1.29
+mode: 13, 95th: 16, next-most-common-low: 13, range: 4
+highest: 16, lowest: 13, totalrange: 4
+Modal fraction: 0.43, Low fraction: 0.00, High fraction: 0.57
+
+length: 4, mean: 14.50, stdev: 0.50
+mode: 15, 95th: 15, next-most-common-low: 14, range: 2
+highest: 15, lowest: 14, totalrange: 2
+Modal fraction: 0.50, Low fraction: 0.50, High fraction: 0.00
+
+length: 7, mean: 13.43, stdev: 2.06
+mode: 14, 95th: 17, next-most-common-low: 11, range: 7
+highest: 17, lowest: 11, totalrange: 7
+Modal fraction: 0.29, Low fraction: 0.43, High fraction: 0.29
+
+length: 5, mean: 13.20, stdev: 2.79
+mode: 17, 95th: 17, next-most-common-low: 16, range: 2
+highest: 17, lowest: 10, totalrange: 8
+Modal fraction: 0.20, Low fraction: 0.80, High fraction: 0.00
+
+length: 10, mean: 13.40, stdev: 2.24
+mode: 15, 95th: 16, next-most-common-low: 14, range: 3
+highest: 16, lowest: 9, totalrange: 8
+Modal fraction: 0.40, Low fraction: 0.50, High fraction: 0.10
+
+length: 14, mean: 12.86, stdev: 2.26
+mode: 14, 95th: 16, next-most-common-low: 13, range: 4
+highest: 16, lowest: 6, totalrange: 11
+Modal fraction: 0.29, Low fraction: 0.57, High fraction: 0.14
+
+length: 14, mean: 12.71, stdev: 2.37
+mode: 15, 95th: 16, next-most-common-low: 14, range: 3
+highest: 16, lowest: 8, totalrange: 9
+Modal fraction: 0.21, Low fraction: 0.71, High fraction: 0.07
+
+length: 11, mean: 13.55, stdev: 1.67
+mode: 14, 95th: 16, next-most-common-low: 13, range: 4
+highest: 16, lowest: 10, totalrange: 7
+Modal fraction: 0.36, Low fraction: 0.36, High fraction: 0.27
+
+length: 16, mean: 13.06, stdev: 1.71
+mode: 14, 95th: 16, next-most-common-low: 12, range: 5
+highest: 16, lowest: 9, totalrange: 8
+Modal fraction: 0.31, Low fraction: 0.50, High fraction: 0.19
+
+length: 11, mean: 13.55, stdev: 1.78
+mode: 13, 95th: 17, next-most-common-low: 12, range: 6
+highest: 17, lowest: 10, totalrange: 8
+Modal fraction: 0.36, Low fraction: 0.18, High fraction: 0.45
+
+length: 12, mean: 13.58, stdev: 1.55
+mode: 14, 95th: 16, next-most-common-low: 13, range: 4
+highest: 16, lowest: 10, totalrange: 7
+Modal fraction: 0.42, Low fraction: 0.42, High fraction: 0.17
+
+length: 14, mean: 13.43, stdev: 1.40
+mode: 15, 95th: 15, next-most-common-low: 14, range: 2
+highest: 15, lowest: 11, totalrange: 5
+Modal fraction: 0.29, Low fraction: 0.71, High fraction: 0.00
+
+length: 18, mean: 13.22, stdev: 1.47
+mode: 14, 95th: 15, next-most-common-low: 13, range: 3
+highest: 15, lowest: 9, totalrange: 7
+Modal fraction: 0.33, Low fraction: 0.50, High fraction: 0.17
+
+length: 20, mean: 12.90, stdev: 1.76
+mode: 14, 95th: 15, next-most-common-low: 13, range: 3
+highest: 15, lowest: 7, totalrange: 9
+Modal fraction: 0.25, Low fraction: 0.60, High fraction: 0.15
+
+length: 21, mean: 12.76, stdev: 1.82
+mode: 13, 95th: 15, next-most-common-low: 11, range: 5
+highest: 16, lowest: 8, totalrange: 9
+Modal fraction: 0.33, Low fraction: 0.29, High fraction: 0.38
+
+length: 26, mean: 12.35, stdev: 2.09
+mode: 13, 95th: 15, next-most-common-low: 10, range: 6
+highest: 15, lowest: 5, totalrange: 11
+Modal fraction: 0.31, Low fraction: 0.38, High fraction: 0.31
+
+length: 35, mean: 11.94, stdev: 1.69
+mode: 11, 95th: 14, next-most-common-low: 10, range: 5
+highest: 15, lowest: 9, totalrange: 7
+Modal fraction: 0.29, Low fraction: 0.20, High fraction: 0.51
+
+length: 32, mean: 12.25, stdev: 1.56
+mode: 13, 95th: 14, next-most-common-low: 12, range: 3
+highest: 15, lowest: 8, totalrange: 8
+Modal fraction: 0.28, Low fraction: 0.50, High fraction: 0.22
+
+length: 40, mean: 12.05, stdev: 1.47
+mode: 12, 95th: 14, next-most-common-low: 11, range: 4
+highest: 15, lowest: 8, totalrange: 8
+Modal fraction: 0.38, Low fraction: 0.23, High fraction: 0.40
+
+length: 39, mean: 11.79, stdev: 1.90
+mode: 13, 95th: 14, next-most-common-low: 12, range: 3
+highest: 14, lowest: 7, totalrange: 8
+Modal fraction: 0.28, Low fraction: 0.56, High fraction: 0.15
+
+length: 52, mean: 10.96, stdev: 2.45
+mode: 13, 95th: 14, next-most-common-low: 12, range: 3
+highest: 15, lowest: 1, totalrange: 15
+Modal fraction: 0.23, Low fraction: 0.71, High fraction: 0.06
+
+length: 69, mean: 11.12, stdev: 1.57
+mode: 11, 95th: 13, next-most-common-low: 9, range: 5
+highest: 14, lowest: 6, totalrange: 9
+Modal fraction: 0.35, Low fraction: 0.23, High fraction: 0.42
+
+length: 74, mean: 10.77, stdev: 1.94
+mode: 12, 95th: 13, next-most-common-low: 11, range: 3
+highest: 14, lowest: 5, totalrange: 10
+Modal fraction: 0.27, Low fraction: 0.58, High fraction: 0.15
+
+length: 92, mean: 10.53, stdev: 1.78
+mode: 12, 95th: 13, next-most-common-low: 11, range: 3
+highest: 14, lowest: 5, totalrange: 10
+Modal fraction: 0.23, Low fraction: 0.65, High fraction: 0.12
+
+length: 115, mean: 10.37, stdev: 1.61
+mode: 11, 95th: 12, next-most-common-low: 10, range: 3
+highest: 14, lowest: 3, totalrange: 12
+Modal fraction: 0.27, Low fraction: 0.48, High fraction: 0.25
+
+length: 137, mean: 10.01, stdev: 1.78
+mode: 11, 95th: 12, next-most-common-low: 10, range: 3
+highest: 13, lowest: 3, totalrange: 11
+Modal fraction: 0.24, Low fraction: 0.55, High fraction: 0.20
+
+length: 164, mean: 9.71, stdev: 1.70
+mode: 11, 95th: 12, next-most-common-low: 10, range: 3
+highest: 13, lowest: 4, totalrange: 10
+Modal fraction: 0.22, Low fraction: 0.64, High fraction: 0.14
+
+length: 213, mean: 9.35, stdev: 1.79
+mode: 10, 95th: 12, next-most-common-low: 9, range: 4
+highest: 13, lowest: 4, totalrange: 10
+Modal fraction: 0.27, Low fraction: 0.47, High fraction: 0.26
+
+length: 238, mean: 9.13, stdev: 1.91
+mode: 10, 95th: 12, next-most-common-low: 9, range: 4
+highest: 12, lowest: 2, totalrange: 11
+Modal fraction: 0.25, Low fraction: 0.50, High fraction: 0.25
+
+length: 335, mean: 8.66, stdev: 1.90
+mode: 10, 95th: 11, next-most-common-low: 9, range: 3
+highest: 12, lowest: 1, totalrange: 12
+Modal fraction: 0.24, Low fraction: 0.63, High fraction: 0.13
+
+length: 418, mean: 8.49, stdev: 1.63
+mode: 9, 95th: 11, next-most-common-low: 8, range: 4
+highest: 12, lowest: 2, totalrange: 11
+Modal fraction: 0.24, Low fraction: 0.46, High fraction: 0.30
+
+length: 554, mean: 7.90, stdev: 1.94
+mode: 9, 95th: 10, next-most-common-low: 8, range: 3
+highest: 11, lowest: 2, totalrange: 10
+Modal fraction: 0.25, Low fraction: 0.55, High fraction: 0.20
+
+length: 761, mean: 7.41, stdev: 1.91
+mode: 8, 95th: 10, next-most-common-low: 7, range: 4
+highest: 12, lowest: 1, totalrange: 12
+Modal fraction: 0.25, Low fraction: 0.44, High fraction: 0.31
+
+length: 996, mean: 7.08, stdev: 1.82
+mode: 8, 95th: 10, next-most-common-low: 7, range: 4
+highest: 11, lowest: 1, totalrange: 11
+Modal fraction: 0.24, Low fraction: 0.54, High fraction: 0.22
+
+length: 1475, mean: 6.54, stdev: 1.83
+mode: 7, 95th: 9, next-most-common-low: 6, range: 4
+highest: 11, lowest: 1, totalrange: 11
+Modal fraction: 0.24, Low fraction: 0.42, High fraction: 0.34
+
+length: 2333, mean: 5.91, stdev: 1.81
+mode: 7, 95th: 8, next-most-common-low: 6, range: 3
+highest: 10, lowest: 1, totalrange: 10
+Modal fraction: 0.26, Low fraction: 0.56, High fraction: 0.18
+
+length: 3845, mean: 5.22, stdev: 1.71
+mode: 6, 95th: 8, next-most-common-low: 5, range: 4
+highest: 9, lowest: 1, totalrange: 9
+Modal fraction: 0.23, Low fraction: 0.51, High fraction: 0.26
+
+length: 7029, mean: 4.41, stdev: 1.61
+mode: 5, 95th: 7, next-most-common-low: 4, range: 4
+highest: 8, lowest: 1, totalrange: 8
+Modal fraction: 0.25, Low fraction: 0.48, High fraction: 0.28
+
+length: 15996, mean: 3.39, stdev: 1.39
+mode: 4, 95th: 6, next-most-common-low: 3, range: 4
+highest: 7, lowest: 1, totalrange: 7
+Modal fraction: 0.25, Low fraction: 0.52, High fraction: 0.23
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 18.00, stdev: 0.00
+mode: 18, 95th: 18, next-most-common-low: 18, range: 1
+highest: 18, lowest: 18, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 1, mean: 17.00, stdev: 0.00
+mode: 17, 95th: 17, next-most-common-low: 17, range: 1
+highest: 17, lowest: 17, totalrange: 1
+Modal fraction: 1.00, Low fraction: 0.00, High fraction: 0.00
+
+length: 8944, mean: 4.15, stdev: 1.51
+mode: 5, 95th: 6, next-most-common-low: 4, range: 3
+highest: 8, lowest: 1, totalrange: 8
+Modal fraction: 0.25, Low fraction: 0.55, High fraction: 0.19
