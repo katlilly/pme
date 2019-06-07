@@ -2,7 +2,9 @@ language: cpp
 compiler: gcc
 dist: trusty
 
-
+env:
+  - CODECOV_TOKEN="b4485777-b359-4ad5-81d8-665c6035d730"
+  
 before_install:
   # C++11
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -15,3 +17,4 @@ install:
 
 script:
   - ./regressiontests.sh
+  - ./get_coverage.sh

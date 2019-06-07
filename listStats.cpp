@@ -4,26 +4,6 @@
 #include "fls.h"
 #include <math.h>
 
-// ?? where to calculate this?
-int numperms;
-
-// set by constructor
-int listNumber;
-int listLength;
-
-// calculated in calculate_stats()
-double mean;
-double stdev;
-int mode;
-int lowexcp;
-int highexcp;
-double modFrac;
-double lowFrac;
-double highFrac;
-int lowest;
-int highest;
-int range;
-int totalrange;
 
 void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
 {
@@ -36,7 +16,7 @@ void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
 }
 
 /*
-  DocIDs are zero indexed in "postings.bin", 
+  DocIDs are zero indexed in "postings.bin" from wsj collection, 
  */
 void ListStats::dgaps_to_bitwidths(int *dest, int *source, int length)
 {
@@ -103,8 +83,6 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
   stdev = sqrt(stdev/length);
 
 
-  
-
   /*
     Find modal bitwidth and high exception
    */
@@ -150,16 +128,12 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
 
   for (int i = mode + 1; i < 32; i++)
     highoutliers += width_freqs[i];
-
   
   modFrac = (double) width_freqs[mode] / length;
   lowFrac = (double) lowoutliers / length;
   highFrac = (double) highoutliers / length;
 
 
-  //printf("\nfraction of high outliers: %.2f\n", (double) highoutliers / length);
-  //printf("fraction of low outliers: %.2f\n", (double) lowoutliers / length);
-    
   /* 
      find next most frequent bitwidth smaller than the mode
   */
@@ -182,15 +156,11 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
       lowest = i;
       break;
     }
-
+  
   totalrange = 1 + highest - lowest;
   range = 1 + highexcp - lowexcp;
 
-
- 
-
-
-  
+   
   
   /*
     Leave this here, will show up in regression tests if this ever

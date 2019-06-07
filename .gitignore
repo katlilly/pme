@@ -9,3 +9,11 @@ _install/bin
 *~
 postings.bin
 pme
+rtests
+testcov
+covtest
+*.gcov
+*.gcno
+*.gcda
+test_stats.txt
+
