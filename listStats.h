@@ -10,11 +10,15 @@ class ListStats
   double mean;
   double stdev;
   int mode;
-  int lowexcp;
   int highexcp;
+  int lowexcp;
+  int lowest;
+  int highest;
   double modFrac;
   double lowFrac;
   double highFrac;
+  int range;
+  int totalrange;
 
  public:
   ListStats(int listID, int length)
@@ -29,7 +33,7 @@ class ListStats
   /* 
      calculate statistics of a list for use in selector generator
    */
-  void calculate_stats(int *bitwidths, int length);
+  void calculate_stats(const int *bitwidths, int length);
   void docnums_to_dgaps(int *dest, int *source, int length);
   void dgaps_to_bitwidths(int *dest, int *source, int length);
   void docnums_to_dgap_bitwidths(int *dest, int *source, int length);
