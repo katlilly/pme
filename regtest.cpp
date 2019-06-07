@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
       piped to a file to compare with known correct results
     */
     ls.calculate_stats(bitwidths, length);
-    printf("\nlength: %d, mean: %.2f, stdev: %.2f\n", length, ls.mean, ls.stdev);
+    printf("\nlength: %u, mean: %.2f, stdev: %.2f\n", length, ls.mean, ls.stdev);
     printf("mode: %d, 95th: %d, next-most-common-low: %d, range: %d\n", ls.mode, ls.highexcp, ls.lowexcp, ls.range);
     printf("highest: %d, lowest: %d, totalrange: %d\n", ls.highest, ls.lowest, ls.totalrange);
     printf("Modal fraction: %.2f, Low fraction: %.2f, High fraction: %.2f\n", ls.modFrac, ls.lowFrac, ls.highFrac);

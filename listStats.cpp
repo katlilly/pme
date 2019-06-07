@@ -76,13 +76,12 @@ void ListStats::docnums_to_dgap_bitwidths(int *dest, int *source, int length)
 void ListStats::calculate_stats(const int *bitwidths, int length)
 {
   double sum = 0;
-  double fraction = 0;
   int max = 0;
   bool set95th = false, set90th = false;
   int highoutliers = 0;
   int lowoutliers = 0;
   int ninetyfifth = 0;
-  int ninetieth = 0;
+  //int ninetieth = 0;
   
   /*
     Count frequencies of bitwidths and calculate mean and stddev
@@ -113,7 +112,7 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
   for (int i = 0; i < 32; i++)
   {
     sum += width_freqs[i];
-    fraction = sum / length;
+    double fraction = sum / length;
     if (width_freqs[i] >= max)
     {
       max = width_freqs[i];
@@ -124,11 +123,11 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
       set95th = true;
       ninetyfifth = i;
     }
-    if (set90th == false && fraction >= 0.90)
-    {
-      set90th = true;
-      ninetieth = i;
-    }
+    // if (set90th == false && fraction >= 0.90)
+    // {
+    //   set90th = true;
+    //   ninetieth = i;
+    // }
   }
   highexcp = ninetyfifth;
   
