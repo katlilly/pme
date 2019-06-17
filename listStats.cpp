@@ -34,7 +34,6 @@ void ListStats::dgaps_to_bitwidths(int *dest, int *source, int length)
 void ListStats::docnums_to_dgap_bitwidths(int *dest, int *source, int length)
 {
   // first docnum may be zero, in which case fls won't give correct bitwidth
-  // i should write my own bitwidth function...
   if (source[0] == 0)
     dest[0] = 1;
   else
@@ -60,17 +59,25 @@ void ListStats::encode_stats(uint *dest)
 }
 
 
-void ListStats::decode_stats(uint *encoded)
+
+void ListStats::print_stats_record(ListStats::record stats)
 {
+  printf("Mode: %d\nLowest: %d\nHighexp: %d\n\n", stats.md, stats.lst, stats.hxp);
+}
+
+
+ListStats::record ListStats::decode_stats(uint *encoded)
+{
+  ListStats::record result;
   uint code = *encoded;
-  uint lw = code & 0xff;
+  result.lst = code & 0xff;
   code = code >> 8;
-  uint hst = code & 0xff;
+  result.hst = code & 0xff;
   code = code >> 8;
-  uint hxp = code & 0xff;
+  result.hxp = code & 0xff;
   code = code >> 8;
-  uint md = code & 0xff;
-  //printf("low: %d, highest: %d, high exception: %d, mode: %d\n", lw, hst, hxp, md);
+  result.md = code & 0xff;
+  return result;
 }
 
 

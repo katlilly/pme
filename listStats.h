@@ -24,6 +24,13 @@ class ListStats
   int range;
   int totalrange;
 
+  struct record {
+    uint lst;
+    uint hst;
+    uint hxp;
+    uint md;
+  };
+  
  public:
   ListStats(int listID, int length)
     {
@@ -38,13 +45,15 @@ class ListStats
      calculate statistics of a list for use in selector generator
    */
   void calculate_stats(const int *bitwidths, int length);
+  
   void docnums_to_dgaps(int *dest, int *source, int length);
   void dgaps_to_bitwidths(int *dest, int *source, int length);
   void docnums_to_dgap_bitwidths(int *dest, int *source, int length);
   void print_stats(void);
   void print_stats_short(void);
   void encode_stats(uint *dest);
-  void decode_stats(uint *encoded);
+  record decode_stats(uint *encoded);
+  void print_stats_record(record stats);
 
   
   //void get_stats();

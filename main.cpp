@@ -8,10 +8,8 @@
 #define NUMLISTS 499692
 
 
-
 int main(int argc, char *argv[])
 {
-
   const char *filename;
   if (argc == 2)
     filename = argv[1];
@@ -32,34 +30,24 @@ int main(int argc, char *argv[])
   while (fread(&length, sizeof(length), 1, fp) == 1)
   {
     if (fread(postings_list, sizeof(*postings_list), length, fp) != length)
-      exit(printf("something went wrong\n"));
+      exit(printf("something went wrong, data doesn't match length\n"));
     listnumber++;
 
-    //printf("list number: %d\n", listnumber);
+    /*
+      Calculate statistics of current list
+    */
     ListStats ls(listnumber, length);
-    ls.docnums_to_dgaps(dgaps, postings_list, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
-    if (listnumber)
-      {
-	ls.calculate_stats(bitwidths, length);
-	ls.print_stats_short();
-	uint encodedstats;
-	ls.encode_stats(&encodedstats);
-	ls.decode_stats(&encodedstats);
-      }
-    
-    if (listnumber == 766)// || listnumber == 64)
-    {
-      //for (int i = 0; i < length; i++)
-      //printf("%d, ", bitwidths[i]);
+    ls.calculate_stats(bitwidths, length);
 
-    }
-    
+    /*
+      Encode list statistics into 32 bits, then decode into a struct
+     */
+    uint encodedstats;
+    ls.encode_stats(&encodedstats);
+    ListStats::record stats = ls.decode_stats(&encodedstats);
+    ls.print_stats_record(stats);
   }
 
-  
-
-
-  
   return 0;
 }
