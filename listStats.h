@@ -4,19 +4,23 @@ class ListStats
 {
 
  public:
-  int numperms;
+
   int listNumber;
   int listLength;
+
   double mean;
   double stdev;
+
   int mode;
   int highexcp;
   int lowexcp;
   int lowest;
   int highest;
+
   double modFrac;
   double lowFrac;
   double highFrac;
+
   int range;
   int totalrange;
 
@@ -37,7 +41,8 @@ class ListStats
   void docnums_to_dgaps(int *dest, int *source, int length);
   void dgaps_to_bitwidths(int *dest, int *source, int length);
   void docnums_to_dgap_bitwidths(int *dest, int *source, int length);
-
+  void print_stats(void);
+  void print_stats_short(void);
 
   
   //void get_stats();

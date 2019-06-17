@@ -48,7 +48,27 @@ void ListStats::docnums_to_dgap_bitwidths(int *dest, int *source, int length)
     dest[i] = fls(temp);
   }
 }
- 
+
+
+void ListStats::print_stats_short(void)
+{
+  printf("%d, %d, %d, %d, %d\n", mode, highexcp, highest, lowexcp, mode + lowest);
+}
+
+
+void ListStats::print_stats(void)
+{
+  printf("List number %d, length: %d\n", listNumber, listLength); 
+  printf("Mean bitwidth = %.2f +/- %.2f\n", mean, stdev); 
+  printf("Modal bitwidth %d\n", mode); 
+  printf("High and low exceptions chosen: %d, %d\n", highexcp, lowexcp); 
+  printf("Highest and lowest bitwidths: %d, %d\n", highest, lowest);
+  printf("Low, modal, high fractions: %.2f, %.2f, %.2f\n", lowFrac, modFrac, highFrac);
+  printf("Chosen range and total range: %d, %d\n\n", range, totalrange); 
+}
+
+
+
 /* 
    Calculate statistics of a list for use in selector generator
    Lists should already be of dgaps when passed to this function

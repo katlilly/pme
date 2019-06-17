@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     if (listnumber)
       {
 	ls.calculate_stats(bitwidths, length);
-	
+	ls.print_stats_short();
       }
     
     if (listnumber == 766)// || listnumber == 64)
