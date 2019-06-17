@@ -62,11 +62,15 @@ void ListStats::encode_stats(uint *dest)
 
 void ListStats::decode_stats(uint *encoded)
 {
-  int code = *encoded;
-  int low = code & 0xff;
-  
-  printf("low: %d\n", low);
-  
+  uint code = *encoded;
+  uint lw = code & 0xff;
+  code = code >> 8;
+  uint hst = code & 0xff;
+  code = code >> 8;
+  uint hxp = code & 0xff;
+  code = code >> 8;
+  uint md = code & 0xff;
+  //printf("low: %d, highest: %d, high exception: %d, mode: %d\n", lw, hst, hxp, md);
 }
 
 
