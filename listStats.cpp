@@ -50,6 +50,26 @@ void ListStats::docnums_to_dgap_bitwidths(int *dest, int *source, int length)
 }
 
 
+void ListStats::encode_stats(uint *dest)
+{
+  *dest = 0;
+  *dest |= (mode << 24);
+  *dest |= (highexcp << 16);
+  *dest |= (highest << 8);
+  *dest |= lowexcp;
+}
+
+
+void ListStats::decode_stats(uint *encoded)
+{
+  int code = *encoded;
+  int low = code & 0xff;
+  
+  printf("low: %d\n", low);
+  
+}
+
+
 void ListStats::print_stats_short(void)
 {
   printf("%d, %d, %d, %d, %d\n", mode, highexcp, highest, lowexcp, mode + lowest);

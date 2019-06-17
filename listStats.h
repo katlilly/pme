@@ -43,6 +43,8 @@ class ListStats
   void docnums_to_dgap_bitwidths(int *dest, int *source, int length);
   void print_stats(void);
   void print_stats_short(void);
+  void encode_stats(uint *dest);
+  void decode_stats(uint *encoded);
 
   
   //void get_stats();

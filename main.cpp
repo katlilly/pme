@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
       {
 	ls.calculate_stats(bitwidths, length);
 	ls.print_stats_short();
+	uint encodedstats;
+	ls.encode_stats(&encodedstats);
+	ls.decode_stats(&encodedstats);
       }
     
     if (listnumber == 766)// || listnumber == 64)
