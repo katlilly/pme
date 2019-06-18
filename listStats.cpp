@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "listStats.h"
 #include "fls.h"
-#include <math.h>
 
 
 void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
@@ -14,6 +14,7 @@ void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
       prev = source[i];
     }
 }
+
 
 /*
   DocIDs are zero indexed in "postings.bin" from wsj collection, 
@@ -59,7 +60,6 @@ void ListStats::encode_stats(uint *dest)
 }
 
 
-
 void ListStats::print_stats_record(ListStats::record stats)
 {
   printf("Mode: %d\nLowest: %d\nHighexp: %d\n\n", stats.md, stats.lst, stats.hxp);
@@ -99,7 +99,6 @@ void ListStats::print_stats(void)
 }
 
 
-
 /* 
    Calculate statistics of a list for use in selector generator
    Lists should already be of dgaps when passed to this function
@@ -132,7 +131,6 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
   for (int i = 0; i < length; i++)
     stdev += pow(bitwidths[i] - mean, 2);
   stdev = sqrt(stdev/length);
-
 
   /*
     Find modal bitwidth and high exception
@@ -170,7 +168,6 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
      possibilities include 90th percentile and largest value.
   */
 
-  
   /* 
      find exception frequencies 
   */
@@ -183,7 +180,6 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
   modFrac = (double) width_freqs[mode] / length;
   lowFrac = (double) lowoutliers / length;
   highFrac = (double) highoutliers / length;
-
 
   /* 
      find next most frequent bitwidth smaller than the mode
@@ -211,8 +207,6 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
   totalrange = 1 + highest - lowest;
   range = 1 + highexcp - lowexcp;
 
-   
-  
   /*
     Leave this here, will show up in regression tests if this ever
     happens (shouldn't be possible with wsj collection of course,
@@ -224,5 +218,3 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
 
   delete [] width_freqs;
 }
-
-

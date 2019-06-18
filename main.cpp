@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "listStats.h"
 #include "fls.h"
+#include "selectorGen.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -14,7 +15,7 @@ int main(int argc, char *argv[])
   if (argc == 2)
     filename = argv[1];
   else
-    exit(printf("Usage::%s <binfile>\n", argv[0]));
+    exit(printf("Usage: %s <binfile>\n", argv[0]));
   FILE *fp;
   if (NULL == (fp = fopen(filename, "rb")))
     exit(printf("Cannot open %s\n", filename));
@@ -47,6 +48,8 @@ int main(int argc, char *argv[])
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
     ls.print_stats_record(stats);
+
+    SelectorGen generator(16, stats.lst, stats.hst, stats.hxp, stats.md);
   }
 
   return 0;

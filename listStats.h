@@ -54,9 +54,8 @@ class ListStats
   void encode_stats(uint *dest);
   record decode_stats(uint *encoded);
   void print_stats_record(record stats);
-
   
-  //void get_stats();
+  
 
   /* 
      Generates permutations in correct order and outputs unique ones
