@@ -44,18 +44,18 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
-
+    
     /*
       Encode list statistics into 32 bits, then decode into a struct
      */
     uint encodedstats;
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
-    ls.print_stats_record(stats);
+    //ls.print_stats_record(stats);
 
     SelectorGen generator(4, stats.lst, stats.hst, stats.hxp, stats.md);
     generator.generate(table);
-    generator.print_table(table);
+    //generator.print_table(table);
   }
 
   delete [] postings_list;

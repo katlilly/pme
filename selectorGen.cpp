@@ -45,15 +45,61 @@ void SelectorGen::generate(int **dest)
     selected++;
   }
 
+  /* Different set of rules for longer lists */
   if (rc.md * 2 + rc.hxp < payload_bits)
   {
-    printf("now is the time for permutations of mode and highexcp\n");
+    //printf("now is the time for permutations of mode and highexcp\n");
+
+    // first an even packing of each of highest, highexcp, and mode
+    // or, first pack three evenly, continuing up to x where x is payload_bits / lowest
+
+    int num_default_ints = payload_bits / rc.hst;
+    if (selected < 1)
+    {
+      for (int i = 0; i < num_default_ints; i++)
+      {
+	dest[selected][i] = rc.hst;
+      }
+      selected++;
+    }
+
+    int num_high_ints = payload_bits / rc.hxp;
+    if (num_high_ints != num_default_ints)
+    {
+      for (int i = 0; i < num_high_ints; i++)
+	dest[selected][i] = rc.hxp;
+      selected++;
+    }
+
+    /// to do convert to highest possible number for same number of ints packed...
+    /// eg 8 8 8 should be 9 9 9
+    /// but don't let this mess with the way i do permutations of mode and exceptions
+    
+    int num_mode_ints = payload_bits / rc.md;
+    if (num_mode_ints != num_high_ints)
+    {
+      for (int i = 0; i < num_mode_ints; i++)
+	dest[selected][i] = rc.md;
+      selected++;
+    }
+    
+
+    int num_low_ints = payload_bits / rc.lst;
+    if (num_low_ints != num_mode_ints)
+    {
+      for (int i = 0; i < num_low_ints; i++)
+	dest[selected][i] = rc.lst;
+      selected++;
+    }
+
+    // then one or more exceptions with mode, and permutations thereof
+    // keep adding permutations until selectors are all used up
+    
+    
   }
 
   
-  /*
-    Different set of rules for longer lists
-  */
+
   
 }
 
