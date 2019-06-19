@@ -24,7 +24,11 @@ int main(int argc, char *argv[])
   int *dgaps = new int[NUMDOCS];
   int *bitwidths = new int[NUMDOCS];
   uint32_t length, listnumber = 0;
-
+  int numselectors = 16;
+  int **table = new int*[numselectors];
+  for (int i = 0; i < numselectors; i++)
+    table[i] = new int[28];
+  
   /*
     Read in postings list - each list begins with its own length
    */
@@ -49,8 +53,20 @@ int main(int argc, char *argv[])
     ListStats::record stats = ls.decode_stats(&encodedstats);
     ls.print_stats_record(stats);
 
-    SelectorGen generator(16, stats.lst, stats.hst, stats.hxp, stats.md);
+    SelectorGen generator(4, stats.lst, stats.hst, stats.hxp, stats.md);
+    generator.generate(table);
+    generator.print_table(table);
   }
 
+  delete [] postings_list;
+  delete [] dgaps;
+  delete [] bitwidths;
+
+  for (int i = 0; i < numselectors; i++)
+    delete [] table[i];
+  delete [] table;
+
+  fclose(fp);
+  
   return 0;
 }

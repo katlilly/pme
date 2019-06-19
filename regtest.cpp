@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	exit(printf("list %u, bitwidth calculation error\n", listnumber));
     
     /*
-      Calculate mean bitwidth and stddev for each list, which will be
+      Calculate mean bitwidth and stddev for each list, output will be
       piped to a file to compare with known correct results
     */
     ls.calculate_stats(bitwidths, length);
@@ -62,11 +62,7 @@ int main(int argc, char *argv[])
     printf("mode: %d, 95th: %d, next-most-common-low: %d, range: %d\n", ls.mode, ls.highexcp, ls.lowexcp, ls.range);
     printf("highest: %d, lowest: %d, totalrange: %d\n", ls.highest, ls.lowest, ls.totalrange);
     printf("Modal fraction: %.2f, Low fraction: %.2f, High fraction: %.2f\n", ls.modFrac, ls.lowFrac, ls.highFrac);
-    
-   
-    
   }
-
     
   return 0;
 }

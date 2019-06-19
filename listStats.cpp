@@ -9,10 +9,10 @@ void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
 {
   int prev = 0;
   for (int i = 0; i < length; i++)
-    {
-      dest[i] = source[i] - prev;
-      prev = source[i];
-    }
+  {
+    dest[i] = source[i] - prev;
+    prev = source[i];
+  }
 }
 
 
@@ -62,7 +62,7 @@ void ListStats::encode_stats(uint *dest)
 
 void ListStats::print_stats_record(ListStats::record stats)
 {
-  printf("Mode: %d\nLowest: %d\nHighexp: %d\n\n", stats.md, stats.lst, stats.hxp);
+  printf("Mode: %d\nLowest: %d\nHighexp: %d\nHighest: %d\n\n", stats.md, stats.lst, stats.hxp, stats.hst);
 }
 
 

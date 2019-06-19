@@ -2,10 +2,8 @@
 
 class SelectorGen
 {
-
  public:
-
-  int num_selectors;
+  int selector_bits;
     
   struct record {
     uint lst;
@@ -13,24 +11,29 @@ class SelectorGen
     uint hxp;
     uint md;
   };
-
   record rc;
+
+ private:
+  int num_selectors = 1;
+  int payload_bits;
   
  public:
-  SelectorGen(int nselectors, uint lowest, uint highest, uint highexp, uint mode)
+  SelectorGen(int selector_bits_in, uint lowest, uint highest, uint highexp, uint mode)
     {
-      num_selectors = nselectors;
+      selector_bits = selector_bits_in;
+      payload_bits = 32 - selector_bits;
+
+      for (int i = 0; i < selector_bits; i++)
+	num_selectors *= 2;
+
       rc.lst = lowest;
       rc.hst = highest;
       rc.hxp = highexp;
       rc.md = mode;
     }
-
   
  public:
-
   void print_table(int **table);
   void generate(int **dest);
-  
 
 };
