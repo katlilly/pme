@@ -2,7 +2,6 @@
 
 class ListStats
 {
-
  public:
 
   int listNumber;

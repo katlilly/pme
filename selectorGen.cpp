@@ -45,6 +45,7 @@ void SelectorGen::generate(int **dest)
     selected++;
   }
 
+  // this should be <=, not < ... fix when have time to test properly
   /* Different set of rules for longer lists */
   if (rc.md * 2 + rc.hxp < payload_bits)
   {
@@ -94,6 +95,9 @@ void SelectorGen::generate(int **dest)
 
     // then one or more exceptions with mode, and permutations thereof
     // keep adding permutations until selectors are all used up
+
+    /* the (unweighted) mean exception frequency of lists where
+       mode+mode+highexp < 28 is 0.24 */
     
     
   }

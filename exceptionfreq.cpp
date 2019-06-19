@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include "listStats.h"
 #include "fls.h"
-#include "selectorGen.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -24,10 +23,10 @@ int main(int argc, char *argv[])
   int *dgaps = new int[NUMDOCS];
   int *bitwidths = new int[NUMDOCS];
   uint32_t length, listnumber = 0;
-  int numselectors = 16;
-  int **table = new int*[numselectors];
-  for (int i = 0; i < numselectors; i++)
-    table[i] = new int[28];
+  double sum = 0;
+  int count = 0;
+
+  printf("length, ints/word, highFrac\n");
   
   /*
     Read in postings list - each list begins with its own length
@@ -44,29 +43,23 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
-    
-    /*
-      Encode list statistics into 32 bits, then decode into a struct
-     */
-    uint encodedstats;
-    ls.encode_stats(&encodedstats);
-    ListStats::record stats = ls.decode_stats(&encodedstats);
-    //ls.print_stats_record(stats);
 
-    SelectorGen generator(4, stats.lst, stats.hst, stats.hxp, stats.md);
-    generator.generate(table);
-    //generator.print_table(table);
 
-    
+    if (ls.mode + ls.mode + ls.highexcp <= 28)
+      {
+	int intstopack = 28 / ls.mode;
+	printf("%5d %d %.2f\n", length, intstopack, ls.highFrac);
+	sum += ls.highFrac;
+	count++;
+      }
   }
+  double mean = sum / count;
+  printf("unweighted mean highexp frequency: %.2f\n", mean);
+  
 
   delete [] postings_list;
   delete [] dgaps;
   delete [] bitwidths;
-
-  for (int i = 0; i < numselectors; i++)
-    delete [] table[i];
-  delete [] table;
 
   fclose(fp);
   
