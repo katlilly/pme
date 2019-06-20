@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     if (ls.mode + ls.mode + ls.highexcp <= 28)
       {
 	int intstopack = 28 / ls.mode;
-	printf("%5d %d %.2f\n", length, intstopack, ls.highFrac);
+	printf("%5u %d %.2f\n", length, intstopack, ls.highFrac);
 	sum += ls.highFrac;
 	count++;
       }
