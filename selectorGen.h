@@ -4,7 +4,8 @@ class SelectorGen
 {
  public:
   int selector_bits;
-    
+  int **table;
+  
   struct record {
     uint lst;
     uint hst;
@@ -16,6 +17,7 @@ class SelectorGen
  private:
   int num_selectors = 1;
   int payload_bits;
+  int selected;
   
  public:
   SelectorGen(int selector_bits_in, uint lowest, uint highest, uint highexp, uint mode)
@@ -35,5 +37,11 @@ class SelectorGen
  public:
   void print_table(int **table);
   void generate(int **dest);
+
+ private:
+  void generate_perms(int *x, int n, void callback(int *, int));
+  int next_lex_perm(int *a, int n);
+  void add_perm_to_table(int *row, int length);
+
 
 };
