@@ -3,13 +3,28 @@
 #include <algorithm>
 #include "selectorGen.h"
 
-void SelectorGen::add_perm_to_table(int *permutation, int length)
+// void SelectorGen::add_perm_to_table(int *permutation, int length)
+// {
+//     for (int i = 0; i < length; i++)
+//     {
+//       table[selected][i] = permutation[i];
+//     }
+// }
+
+
+void SelectorGen::print_perm(int *permutation, int length)
 {
-    for (int i = 0; i < length; i++)
-    {
-      table[selected][i] = permutation[i];
-    }
+  for (int i = 0; i < length; i++)
+    printf("%d ", permutation[i]);
+  printf("\n");
 }
+
+//void SelectorGen::print_perm_to_table(int **table, int row, int *permutation, int length)
+//{
+//  for (int i = 0; i < length; i++)
+//    table[row][i] = permutation[i];
+//}
+
 
 /* get next lexicographical permutation. taken from rosettacode */
 int SelectorGen::next_lex_perm(int *a, int n) {
@@ -169,7 +184,7 @@ void SelectorGen::generate(int **dest)
     
     // then make the permutations copying to the selector table until
     // it is full or we run out of permutations
-    //generator.generate_perms(combination, comb_length, add_perm_to_table);
+    this->generate_perms(combination, comb_length, print_perm);
 
 
 

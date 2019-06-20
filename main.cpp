@@ -22,13 +22,13 @@ int main(int argc, char *argv[])
 
   int *postings_list = new int[NUMDOCS];
   int *bitwidths = new int[NUMDOCS];
-  uint32_t length, listnumber = 0;
+  int32_t length, listnumber = 0;
   int numselectors = 16;
-  
-  
+  int **table = new int*[numselectors];
+  //for (int i = 0; i < 
   /*
     Read in postings list - each list begins with its own length
-   */
+  */
   while (fread(&length, sizeof(length), 1, fp) == 1)
   {
     if (fread(postings_list, sizeof(*postings_list), length, fp) != length)
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     
     /*
       Encode list statistics into 32 bits, then decode into a struct
-     */
+    */
     uint encodedstats;
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
@@ -53,12 +53,12 @@ int main(int argc, char *argv[])
       ls.print_stats_record(stats);
 
     SelectorGen generator(4, stats.lst, stats.hst, stats.hxp, stats.md);
-    generator.table = new int*[numselectors];
+    //generator.table = new int*[numselectors];
     for (int i = 0; i < numselectors; i++)
-      generator.table[i] = new int[28];
-    generator.generate(generator.table);
+      table[i] = new int[28];
+    generator.generate(table);
     if (ls.mode < 10)
-      generator.print_table(generator.table);
+      generator.print_table(table);
 
     
   }
