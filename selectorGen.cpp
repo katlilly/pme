@@ -3,14 +3,6 @@
 #include <algorithm>
 #include "selectorGen.h"
 
-// void SelectorGen::add_perm_to_table(int *permutation, int length)
-// {
-//     for (int i = 0; i < length; i++)
-//     {
-//       table[selected][i] = permutation[i];
-//     }
-// }
-
 
 void SelectorGen::print_perm(int *permutation, int length)
 {
@@ -19,11 +11,11 @@ void SelectorGen::print_perm(int *permutation, int length)
   printf("\n");
 }
 
-//void SelectorGen::print_perm_to_table(int **table, int row, int *permutation, int length)
-//{
-//  for (int i = 0; i < length; i++)
-//    table[row][i] = permutation[i];
-//}
+void SelectorGen::add_perm_to_table(int **table, int row, int *permutation, int length)
+{
+  for (int i = 0; i < length; i++)
+    table[row][i] = permutation[i];
+}
 
 
 /* get next lexicographical permutation. taken from rosettacode */
@@ -55,11 +47,11 @@ int SelectorGen::next_lex_perm(int *a, int n) {
 
 /* generates permutations in correct order and outputs unique ones
  - taken directly from rosettacode */
-void SelectorGen::generate_perms(int *x, int n, void callback(int *, int))
+void SelectorGen::generate_perms(int **table, int selected, int *x, int n, void callback(int**, int, int *, int))
 {
     do
     {
-      if (callback) callback(x, n);
+      if (callback) callback(table, selected, x, n);
       selected++;
     }
     while (next_lex_perm(x, n) && selected < num_selectors);
@@ -113,11 +105,6 @@ void SelectorGen::generate(int **dest)
   //if (rc.md * 2 + rc.hxp < payload_bits)
   if (rc.md * 3 < payload_bits)
   {
-    //printf("now is the time for permutations of mode and highexcp\n");
-
-    // first an even packing of each of highest, highexcp, and mode
-    // or, first pack three evenly, continuing up to x where x is payload_bits / lowest
-
     // even packing for largest numbers
     int num_default_ints = payload_bits / rc.hst;
     if (selected < 1) // check if have already allowed for largest numbers in list
@@ -150,12 +137,14 @@ void SelectorGen::generate(int **dest)
     /* the (unweighted) mean exception frequency of lists where
        mode+mode+highexp < 28 is 0.24 */
     
-    // a combination for mode plus not less than 25% exceptions
+    // a combination for mode plus 25% exceptions
     int *combination = new int[payload_bits];
     for (int i = 0; i < payload_bits; i++)
       combination[i] = 0;
+    
     int bits_available = payload_bits;
     int i = 0;
+    
     while (bits_available >= rc.hxp)
       {
 	combination[i++] = rc.hxp;
@@ -184,30 +173,33 @@ void SelectorGen::generate(int **dest)
     
     // then make the permutations copying to the selector table until
     // it is full or we run out of permutations
-    this->generate_perms(combination, comb_length, print_perm);
+    this->generate_perms(dest, selected, combination, comb_length, add_perm_to_table);
+
+    // we lost the correct value of "selected" while generating perms, so find it again
+    selected = 16;
+    for (int i = 0; i < num_selectors; i++)
+      if (dest[i][0] == 0)
+      {
+	selected = i;
+	break;
+      }
 
 
-
-
-    // if there is room left put this one in (or possible all the even
-    // packings below mode...
+    printf("%d selectors used\n", selected);
+    
+    //if there is room left put in even packing of low exception
     if (selected < num_selectors)
     {
       int num_low_ints = payload_bits / rc.lst;
       if (num_low_ints != num_mode_ints)
       {
-	for (int i = 0; i < num_low_ints; i++)
-	  dest[selected][i] = rc.lst;
-	selected++;
+    	for (int i = 0; i < num_low_ints; i++)
+    	  dest[selected][i] = rc.lst;
+    	selected++;
       }
     }
-  }
-
-  
-
-  
+  }  
 }
-
 
 
 void SelectorGen::print_table(int **table)

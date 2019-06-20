@@ -39,10 +39,12 @@ class SelectorGen
   void generate(int **dest);
 
  private:
-  void generate_perms(int *x, int n, void callback(int *, int));
+  void generate_perms(int **table, int row, int *x, int n, void callback(int**, int, int *, int));
   int next_lex_perm(int *a, int n);
   void add_perm_to_table(int *row, int length);
   static void print_perm(int *permutation, int length);
+  static void add_perm_to_table(int **table, int row, int *permutation, int length);
+
 
 
 };
