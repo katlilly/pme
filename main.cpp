@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
     exit(printf("Cannot open %s\n", filename));
 
   int *postings_list = new int[NUMDOCS];
-  int *dgaps = new int[NUMDOCS];
   int *bitwidths = new int[NUMDOCS];
   uint32_t length, listnumber = 0;
   int numselectors = 16;
@@ -65,7 +64,6 @@ int main(int argc, char *argv[])
   }
 
   delete [] postings_list;
-  delete [] dgaps;
   delete [] bitwidths;
 
   //for (int i = 0; i < numselectors; i++)
