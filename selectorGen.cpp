@@ -87,7 +87,7 @@ void SelectorGen::generate(int **dest)
 	dest[selected++][1] = payload_bits - i;
       }
       else
-      	exit(printf("ran out of selectors, this shouldn't happen\n"));
+	;//exit(printf("ran out of selectors, this shouldn't happen\n"));
     }
   }
 
@@ -103,7 +103,7 @@ void SelectorGen::generate(int **dest)
   // this should be <=, not < ... fix when have time to test properly
   /* Different set of rules for longer lists */
   //if (rc.md * 2 + rc.hxp < payload_bits)
-  if (rc.md * 3 < payload_bits)
+  if (rc.md * 3 <= payload_bits)
   {
     // even packing for largest numbers
     int num_default_ints = payload_bits / rc.hst;
@@ -137,7 +137,7 @@ void SelectorGen::generate(int **dest)
     /* the (unweighted) mean exception frequency of lists where
        mode+mode+highexp < 28 is 0.24 */
     
-    // a combination for mode plus 25% exceptions
+     // a combination of mode plus 25% exceptions
     int *combination = new int[payload_bits];
     for (int i = 0; i < payload_bits; i++)
       combination[i] = 0;
@@ -160,7 +160,7 @@ void SelectorGen::generate(int **dest)
     if (bits_available >= rc.md)
       combination[i] = rc.md;
 
-    // next sort the combination, then make and count the permutations
+    // sort the combination, then make and count the permutations
     int comb_length = 0;
     for (int i = 0; i < payload_bits; i++)
       {
@@ -169,11 +169,11 @@ void SelectorGen::generate(int **dest)
        comb_length++;
       }
     std::sort(combination, combination + comb_length);
-
     
     // then make the permutations copying to the selector table until
     // it is full or we run out of permutations
     this->generate_perms(dest, selected, combination, comb_length, add_perm_to_table);
+    delete [] combination;
 
     // we lost the correct value of "selected" while generating perms, so find it again
     selected = 16;
@@ -183,10 +183,7 @@ void SelectorGen::generate(int **dest)
 	selected = i;
 	break;
       }
-
-
-    printf("%d selectors used\n", selected);
-    
+        
     //if there is room left put in even packing of low exception
     if (selected < num_selectors)
     {
@@ -198,13 +195,12 @@ void SelectorGen::generate(int **dest)
     	selected++;
       }
     }
-  }  
+  }
 }
 
 
 void SelectorGen::print_table(int **table)
 {
-  
   for (int i = 0; i < num_selectors; i++)
   {
     for (int j = 0; j < payload_bits; j++)

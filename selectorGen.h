@@ -4,8 +4,7 @@ class SelectorGen
 {
  public:
   int selector_bits;
-  //int **table;
-  
+    
   struct record {
     uint lst;
     uint hst;
