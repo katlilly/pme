@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <stdint.h>
-#include "listStats.h"
 #include "fls.h"
+#include "listStats.h"
 #include "selectorGen.h"
+#include "compressPME.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -23,8 +24,8 @@ int main(int argc, char *argv[])
   int *postings_list = new int[NUMDOCS];
   int *bitwidths = new int[NUMDOCS];
   int32_t length, listnumber = 0;
-  int selectorbits = 5;
-  int numselectors = 32;
+  int selectorbits = 4;
+  int numselectors = 16;
   int **table = new int*[numselectors];
   for (int i = 0; i < numselectors; i++)
     table[i] = new int[32 - selectorbits];
@@ -57,6 +58,12 @@ int main(int argc, char *argv[])
     */
     SelectorGen generator(selectorbits, stats.lst, stats.hst, stats.hxp, stats.md);
     generator.generate(table);
+        
+    /*
+      Do the pme compression
+    */
+    CompressPME compressor(selectorbits, table);
+    compressor.print_selector_table();
     
   }
 

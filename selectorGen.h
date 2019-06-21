@@ -36,6 +36,7 @@ class SelectorGen
  public:
   void print_table(int **table);
   void generate(int **dest);
+  int get_num_rows();
 
  private:
   void generate_perms(int **table, int row, int *x, int n, void callback(int**, int, int *, int));

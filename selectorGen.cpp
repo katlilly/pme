@@ -3,6 +3,10 @@
 #include <algorithm>
 #include "selectorGen.h"
 
+int SelectorGen::get_num_rows()
+{
+  return selected;
+}
 
 void SelectorGen::print_perm(int *permutation, int length)
 {
