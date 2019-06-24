@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class CompressPME
 {
  public:
@@ -53,7 +55,8 @@ class CompressPME
 	st.ints_to_pack[i] = rowlength;
       }
 
-      // sort the table so longer selectors never occur after shorter ones
+      // need to sort the table so longer selectors never occur after
+      // shorter ones, otherwise the best selector won't always get chosen
       
     }
 
@@ -70,6 +73,8 @@ class CompressPME
 
  public:
   void print_selector_table();
-
+  void print_bigendian32(uint32_t num);
+  uint32_t pme_encode(uint32_t *dest, uint32_t *raw, uint8_t *selectors,
+		      uint32_t intstocompress);
 
 };

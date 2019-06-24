@@ -1,11 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <cstdint>
 #include "listStats.h"
 #include "fls.h"
 
 
 void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
+{
+  int prev = 0;
+  for (int i = 0; i < length; i++)
+  {
+    dest[i] = source[i] - prev;
+    prev = source[i];
+  }
+}
+
+
+void ListStats::docnums_to_u32dgaps(uint32_t *dest, int *source, int length)
 {
   int prev = 0;
   for (int i = 0; i < length; i++)
@@ -107,7 +119,7 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
 {
   double sum = 0;
   int max = 0;
-  bool set95th = false, set90th = false;
+  bool set95th = false;//, set90th = false;
   int highoutliers = 0;
   int lowoutliers = 0;
   int ninetyfifth = 0;

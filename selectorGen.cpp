@@ -15,7 +15,8 @@ void SelectorGen::print_perm(int *permutation, int length)
   printf("\n");
 }
 
-void SelectorGen::add_perm_to_table(int **table, int row, int *permutation, int length)
+void SelectorGen::add_perm_to_table(int **table, uint row,
+				    int *permutation, int length)
 {
   for (int i = 0; i < length; i++)
     table[row][i] = permutation[i];
@@ -51,7 +52,8 @@ int SelectorGen::next_lex_perm(int *a, int n) {
 
 /* generates permutations in correct order and outputs unique ones
  - taken directly from rosettacode */
-void SelectorGen::generate_perms(int **table, int selected, int *x, int n, void callback(int**, int, int *, int))
+void SelectorGen::generate_perms(int **table, uint selected, int *x, int n,
+				 void callback(int**, uint, int *, int))
 {
     do
     {
@@ -64,8 +66,8 @@ void SelectorGen::generate_perms(int **table, int selected, int *x, int n, void 
 
 void SelectorGen::generate(int **dest)
 {
-  for (int i = 0; i < num_selectors; i++)
-    for (int j = 0; j < payload_bits; j++)
+  for (uint i = 0; i < num_selectors; i++)
+    for (uint j = 0; j < payload_bits; j++)
       dest[i][j] = 0;
 
   selected = 0;
@@ -79,11 +81,11 @@ void SelectorGen::generate(int **dest)
      exception */
   if ((rc.md * 2 + rc.hxp) > payload_bits) 
   {
-    int start = rc.lst;
+    uint start = rc.lst;
     if (start < payload_bits - rc.hst)
       start = payload_bits - rc.hst; 
     
-    for (int i = start; i <= payload_bits - start; i++)
+    for (uint i = start; i <= payload_bits - start; i++)
     {
       if (selected < num_selectors)
       {
@@ -143,16 +145,16 @@ void SelectorGen::generate(int **dest)
     
      // a combination of mode plus 25% exceptions
     int *combination = new int[payload_bits];
-    for (int i = 0; i < payload_bits; i++)
+    for (uint i = 0; i < payload_bits; i++)
       combination[i] = 0;
     
-    int bits_available = payload_bits;
-    int i = 0;
+    uint bits_available = payload_bits;
+    uint i = 0;
     
     while (bits_available >= rc.hxp)
       {
 	combination[i++] = rc.hxp;
-	int j = 0;
+	uint j = 0;
 	bits_available -= rc.hxp;
 	while (bits_available >= rc.md && j < 3)
 	{
@@ -166,7 +168,7 @@ void SelectorGen::generate(int **dest)
 
     // sort the combination, then make and count the permutations
     int comb_length = 0;
-    for (int i = 0; i < payload_bits; i++)
+    for (uint i = 0; i < payload_bits; i++)
       {
        if (combination[i] == 0)
 	break;
@@ -181,7 +183,7 @@ void SelectorGen::generate(int **dest)
 
     // we lost the correct value of "selected" while generating perms, so find it again
     selected = 16;
-    for (int i = 0; i < num_selectors; i++)
+    for (uint i = 0; i < num_selectors; i++)
       if (dest[i][0] == 0)
       {
 	selected = i;
@@ -205,9 +207,9 @@ void SelectorGen::generate(int **dest)
 
 void SelectorGen::print_table(int **table)
 {
-  for (int i = 0; i < num_selectors; i++)
+  for (uint i = 0; i < num_selectors; i++)
   {
-    for (int j = 0; j < payload_bits; j++)
+    for (uint j = 0; j < payload_bits; j++)
       printf("%2d ", table[i][j]);
     printf("\n");
   }

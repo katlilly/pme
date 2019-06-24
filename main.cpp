@@ -5,6 +5,7 @@
 #include "listStats.h"
 #include "selectorGen.h"
 #include "compressPME.h"
+#include "compressSimple9.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -23,7 +24,10 @@ int main(int argc, char *argv[])
 
   int *postings_list = new int[NUMDOCS];
   int *bitwidths = new int[NUMDOCS];
-  int32_t length, listnumber = 0;
+  uint32_t *dgaps = new uint32_t[NUMDOCS];
+  uint32_t *decoded = new uint32_t[NUMDOCS];
+
+  uint32_t length, listnumber = 0;
   int selectorbits = 4;
   int numselectors = 16;
   int **table = new int*[numselectors];
@@ -43,6 +47,7 @@ int main(int argc, char *argv[])
       Calculate statistics of current list
     */
     ListStats ls(listnumber, length);
+    ls.docnums_to_u32dgaps(dgaps, postings_list, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
     
@@ -54,7 +59,7 @@ int main(int argc, char *argv[])
     ListStats::record stats = ls.decode_stats(&encodedstats);
 
     /* 
-       Generate selector table given selector length and list stats
+      Generate selector table given selector length and list stats
     */
     SelectorGen generator(selectorbits, stats.lst, stats.hst, stats.hxp, stats.md);
     generator.generate(table);
@@ -62,14 +67,49 @@ int main(int argc, char *argv[])
     /*
       Do the pme compression
     */
-    CompressPME compressor(selectorbits, table);
-    compressor.print_selector_table();
+    //CompressPME pme_compressor(selectorbits, table);
+    //pme_compressor.print_selector_table();
+
+    /*
+      Do simple 9 compression for effectiveness comparision
+    */
+    CompressSimple9 *s9_compressor = new CompressSimple9();
+    uint32_t numencoded = 0;
+    uint32_t compressedwords = 0;
+    uint32_t compressedints = 0;
+
+    uint32_t *encoded = new uint32_t[length];
+    for (compressedints = 0; compressedints < length; compressedints += numencoded)
+      numencoded = s9_compressor->encode(encoded + compressedwords++,
+					 dgaps + compressedints,
+					length - compressedints);
+
+    //printf("%u ints compressed into %u words\n\n\n", compressedints, compressedwords);
+
+    // decompress
+    //uint32_t *decoded = new uint32_t[length];
+    // if (listnumber < 1000)
+    // {
+    //   int offset = 0;
+    //   for (int i = 0; i < compressedwords; i++)
+    // 	{
+    // 	  offset += s9_compressor->decode(decoded, encoded[i], offset);
+    // 	}
+      
+    //   // check for differences between original and decompressed
+    // }
+
     
+    delete [] encoded;
+    free(s9_compressor);
+
   }
 
   delete [] postings_list;
   delete [] bitwidths;
-
+  delete [] dgaps;
+  delete [] decoded;
+  
   for (int i = 0; i < numselectors; i++)
     delete [] table[i];
   delete [] table;
