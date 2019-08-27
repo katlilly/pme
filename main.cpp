@@ -43,6 +43,8 @@ int main(int argc, char *argv[])
       exit(printf("something went wrong, data doesn't match length\n"));
     listnumber++;
 
+    printf("length = %d\n", length);
+    
     /*
       Calculate statistics of current list
     */
@@ -50,14 +52,18 @@ int main(int argc, char *argv[])
     ls.docnums_to_u32dgaps(dgaps, postings_list, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
-    
+    ls.print_stats_short();
+    printf("length = %d\n", ls.listLength);
     /*
       Encode list statistics into 32 bits, then decode into a struct
     */
     uint encodedstats;
+    //printf("%d\n", encodedstats);
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
 
+
+    
     /* 
       Generate selector table given selector length and list stats
     */

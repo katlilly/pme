@@ -34,6 +34,7 @@ void ListStats::docnums_to_u32dgaps(uint32_t *dest, int *source, int length)
 void ListStats::dgaps_to_bitwidths(int *dest, int *source, int length)
 {
   // first docnum may be zero, in which case fls won't give correct bitwidth
+  // this is not the fastest way of addressing this problem, fix later.
   if (source[0] == 0)
     dest[0] = 1;
   else
@@ -47,6 +48,7 @@ void ListStats::dgaps_to_bitwidths(int *dest, int *source, int length)
 void ListStats::docnums_to_dgap_bitwidths(int *dest, int *source, int length)
 {
   // first docnum may be zero, in which case fls won't give correct bitwidth
+  // this is not the fastest way of addressing this problem, fix later.
   if (source[0] == 0)
     dest[0] = 1;
   else
@@ -95,7 +97,7 @@ ListStats::record ListStats::decode_stats(uint *encoded)
 
 void ListStats::print_stats_short(void)
 {
-  printf("%d, %d, %d, %d, %d\n", mode, highexcp, highest, lowexcp, mode + lowest);
+  printf("%d, %d, %d, %d\n", lowexcp, mode, highexcp, highest);
 }
 
 
@@ -113,17 +115,16 @@ void ListStats::print_stats(void)
 
 /* 
    Calculate statistics of a list for use in selector generator
-   Lists should already be of dgaps when passed to this function
+   Lists should already be of bitwidths of dgaps when passed to this function
 */
 void ListStats::calculate_stats(const int *bitwidths, int length)
 {
   double sum = 0;
   int max = 0;
-  bool set95th = false;//, set90th = false;
+  bool set95th = false;
   int highoutliers = 0;
   int lowoutliers = 0;
   int ninetyfifth = 0;
-  //int ninetieth = 0;
   
   /*
     Count frequencies of bitwidths and calculate mean and stddev
@@ -139,7 +140,7 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
     sum += bitwidths[i];
   }
   mean = sum / length;
-
+  
   for (int i = 0; i < length; i++)
     stdev += pow(bitwidths[i] - mean, 2);
   stdev = sqrt(stdev/length);
@@ -162,11 +163,6 @@ void ListStats::calculate_stats(const int *bitwidths, int length)
       set95th = true;
       ninetyfifth = i;
     }
-    // if (set90th == false && fraction >= 0.90)
-    // {
-    //   set90th = true;
-    //   ninetieth = i;
-    // }
   }
   highexcp = ninetyfifth;
   
