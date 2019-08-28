@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
       exit(printf("something went wrong, data doesn't match length\n"));
     listnumber++;
 
-    printf("length = %d\n", length);
+    printf("length = %u\n", length);
     
     /*
       Calculate statistics of current list

@@ -74,10 +74,19 @@ int main(int argc, char *argv[])
     generator.print_table(table);
 
 
+    
+
 
     listnumber++;
   }
 
+  delete [] postings_list;
+  delete [] bitwidths;
+  for (int i = 0; i < numselectors; i++)
+    delete [] table[i];
+  delete [] table;
+
+  fclose(fp);
   
   return 0;
 }
