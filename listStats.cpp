@@ -76,7 +76,7 @@ void ListStats::encode_stats(uint *dest)
 
 void ListStats::print_stats_record(ListStats::record stats)
 {
-  printf("Mode: %d\nLowest: %d\nHighexp: %d\nHighest: %d\n\n", stats.md, stats.lst, stats.hxp, stats.hst);
+  printf("Lowest: %d\nMode: %d\nHighexp: %d\nHighest: %d\n\n", stats.lst, stats.md, stats.hxp, stats.hst);
 }
 
 

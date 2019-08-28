@@ -7,9 +7,9 @@ class SelectorGen
     
   struct record {
     uint lst;
-    uint hst;
-    uint hxp;
     uint md;
+    uint hxp;
+    uint hst;
   };
   record rc;
 
@@ -19,7 +19,13 @@ class SelectorGen
   uint selected;
   
  public:
-  SelectorGen(int selector_bits_in, uint lowest, uint highest, uint highexp, uint mode)
+
+  /* 
+     Initialised with the precalculated statistics of a list, as well
+     as the number of bits we are chosing to use for the selector in
+     the current experiment.
+   */
+  SelectorGen(int selector_bits_in, uint lowest, uint mode, uint highexp, uint highest)
     {
       selector_bits = selector_bits_in;
       payload_bits = 32 - selector_bits;
@@ -28,23 +34,59 @@ class SelectorGen
 	num_selectors *= 2;
 
       rc.lst = lowest;
-      rc.hst = highest;
-      rc.hxp = highexp;
       rc.md = mode;
+      rc.hxp = highexp;
+      rc.hst = highest;
     }
   
+  
  public:
-  void print_table(int **table);
+
+  /*
+    Generate a selector table for the current list. Each list gets a
+    bespoke selector table based on the known bitwidth statistics of
+    that list and the chosen size of the table (how many bits we chose
+    to set aside for the selector).
+   */
   void generate(int **dest);
+
+  /*
+    Check how many rows have been used in selector. Useful for
+    selector size vs compressed data size experiments.
+   */
   int get_num_rows();
 
+  /*
+    Print the selector table to screen. for error checking.
+   */
+  void print_table(int **table);
+
+
  private:
+  
+  /*
+    Generate permutations of a row of bitwidths
+   */
   void generate_perms(int **table, uint row, int *x, int n, void callback(int**, uint, int *, int));
+
+  /*
+    Find the next in-order permutation of a row of bitwidths
+   */
   int next_lex_perm(int *a, int n);
+  
+  /*
+    Add a row to the selector table using the current permutation
+   */
   void add_perm_to_table(uint *row, int length);
+
+  /* 
+     Sort the rows in the selector table so that no row has more ints
+     to pack than a row before it
+   */
+  void sort_table(int **table);
+
   static void print_perm(int *permutation, int length);
   static void add_perm_to_table(int **table, uint row, int *permutation, int length);
-
 
 
 };

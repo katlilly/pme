@@ -43,14 +43,14 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
-    ls.print_stats_short();
+    //ls.print_stats_short();
 
     /*
       Encode the calculated statistics into 32 bits, then decode into
       a struct
     */
     uint encodedstats;
-    printf("%d\n", encodedstats);
+    //printf("%d\n", encodedstats);
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
     ls.print_stats_record(stats);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     // obviously should change inputs so this takes the struct rather
     // than each of its elements
     int selectorbits = 4;
-    SelectorGen generator(selectorbits, stats.lst, stats.hst, stats.hxp, stats.md);
+    SelectorGen generator(selectorbits, stats.lst, stats.md, stats.hxp, stats.hst);
     int numselectors = 16;
     int **table = new int*[numselectors];
 
@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
 
   delete [] postings_list;
   delete [] bitwidths;
-  for (int i = 0; i < numselectors; i++)
-    delete [] table[i];
-  delete [] table;
+  //for (int i = 0; i < numselectors; i++)
+  //delete [] table[i];
+  //delete [] table;
 
   fclose(fp);
   
