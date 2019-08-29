@@ -202,6 +202,138 @@ void SelectorGen::generate(int **dest)
       }
     }
   }
+  //sort_table(dest);
+}
+
+
+void SelectorGen::sort_table(int **table)
+{
+  int numrows = 0;
+  for (uint i = 0; i < num_selectors; i++)
+  {
+    int rowlength = 0;
+    for (int j = 0; j < 28; j++)
+      if (table[i][j] == 0)
+      {
+	rowlength = j;
+	printf("row length: %d\n", rowlength);
+	break;
+      }
+    if (rowlength == 0)
+    {
+      numrows = i;
+      printf("number of rows: %d\n", numrows);
+      break;
+    }
+  }
+}
+
+
+/* 
+   Convert bitwidth table from 2D matrix to selector_table data
+   type, while also sorting rows for optimal packing (longest rows
+   first)
+ */
+SelectorGen::selector_table SelectorGen::convert_table(int **table)
+{
+  selector_table result;
+    
+  // get number of rows
+  int numrows = 0;
+  for (uint i = 0; i < num_selectors; i++)
+  {
+    if (table[i][0] == 0)
+    {
+      numrows = i;
+      break;
+    }
+  }
+  result.rows = numrows;
+  result.row_lengths = new int[numrows];
+  result.bitwidths = new int*[numrows];
+
+  // get length of longest row
+  int maxlength, rowlength = 0;
+  int *temp_row_lengths = new int[numrows];
+  for (int i = 0; i < numrows; i++)
+    for (int j = 0; j < 28; j++)   ///// this '28' here is dangerous! fix this!!!
+      if (table[i][j] == 0)
+      {
+	rowlength = j;
+	if (rowlength > maxlength)
+	  maxlength = rowlength;
+	temp_row_lengths[i] = j;
+	break;
+      }
+  
+  // write out rows longest to shortest
+  // for each length starting with longest
+  int count = 0;
+  while (count < numrows)
+  {
+    for (int i = maxlength; i > 0; i--)
+    {
+      ///look at each row
+      for (int j = 0; j < numrows; j++)
+      {
+	if (temp_row_lengths[j] == i)
+        {
+	  //printf("row %d has a length of %d\n", j, i);
+	  result.row_lengths[count] = i;
+	  result.bitwidths[count] = new int[i];
+	  for (int k = 0; k < i; k++)
+	    result.bitwidths[count][k] = table[j][k];
+	  count++;
+	}
+	
+      }
+    }
+  }
+
+  
+  //int numrows = 0;
+  //int maxlength = 0;
+  // for (uint i = 0; i < num_selectors; i++)
+  // {
+  //   int rowlength = 0;
+  //   for (int j = 0; j < 28; j++)
+  //     if (table[i][j] == 0)
+  //     {
+  // 	rowlength = j;
+  // 	if (rowlength > maxlength)
+  // 	  maxlength = rowlength;
+  // 	temp_row_lengths[i] = j;
+  // 	result.row_lengths[i] = j; // dont leave this here
+  // 	break;
+  //     }
+  //   if (rowlength == 0)
+  //   {
+  //     numrows = i;
+  //     printf("number of rows: %d\n", numrows);
+  //     break;
+  //   }
+  // }
+
+  // printf("longest row = %d\n", maxlength);
+  // result.rows = numrows;
+  return result;
+}
+
+void SelectorGen::print_converted_table(selector_table table)
+{
+  
+  printf("Selector table:\n");
+  for (int i = 0; i < table.rows; i++)
+  {
+    printf("%d int packing: ", table.row_lengths[i]);
+    for (int j = 0; j < table.row_lengths[i]; j++)
+      printf("%d ", table.bitwidths[i][j]);
+    printf("\n");
+  }
+
+  
+  printf("\n======================\n\n");
+
 }
 
 

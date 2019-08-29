@@ -70,9 +70,11 @@ int main(int argc, char *argv[])
     for (int i = 0; i < numselectors; i++)
       table[i] = new int[32 - selectorbits];
     generator.generate(table);
-    
-    generator.print_table(table);
+ 
+    //generator.print_table(table);
 
+    SelectorGen::selector_table st = generator.convert_table(table);
+    generator.print_converted_table(st);
 
     
 

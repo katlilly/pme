@@ -13,6 +13,14 @@ class SelectorGen
   };
   record rc;
 
+  struct selector_table {
+    int rows;
+    int *row_lengths;
+    int **bitwidths;
+  };
+  //selector_table st;
+  
+
  private:
   uint num_selectors = 1;
   uint payload_bits;
@@ -37,6 +45,7 @@ class SelectorGen
       rc.md = mode;
       rc.hxp = highexp;
       rc.hst = highest;
+      
     }
   
   
@@ -61,6 +70,10 @@ class SelectorGen
    */
   void print_table(int **table);
 
+
+  void print_converted_table(selector_table table);
+  
+  selector_table convert_table(int **table);
 
  private:
   
