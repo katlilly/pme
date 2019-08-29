@@ -202,7 +202,7 @@ void SelectorGen::generate(int **dest)
       }
     }
   }
-  //sort_table(dest);
+  //printf("generated %d selectors\n", selected);
 }
 
 
@@ -239,18 +239,22 @@ SelectorGen::selector_table SelectorGen::convert_table(int **table)
   selector_table result;
     
   // get number of rows
-  int numrows = 0;
-  for (uint i = 0; i < num_selectors; i++)
-  {
-    if (table[i][0] == 0)
-    {
-      numrows = i;
-      break;
-    }
-  }
-  result.rows = numrows;
-  result.row_lengths = new int[numrows];
-  result.bitwidths = new int*[numrows];
+  int numrows = get_num_rows();
+  // for (uint i = 0; i < num_selectors; i++)
+  // {
+  //   if (table[i][0] == 0)
+  //   {
+  //     numrows = i;
+  //     break;
+  //   }
+  // }
+  // //printf("            numrows = %d\n", numrows);
+  // result.rows = numrows;
+
+
+  result.rows = selected;
+  result.row_lengths = new int[selected];
+  result.bitwidths = new int*[selected];
 
   // get length of longest row
   int maxlength, rowlength = 0;
@@ -322,7 +326,7 @@ SelectorGen::selector_table SelectorGen::convert_table(int **table)
 void SelectorGen::print_converted_table(selector_table table)
 {
   
-  printf("Selector table:\n");
+  //printf("Selector table:\n");
   for (int i = 0; i < table.rows; i++)
   {
     printf("%d int packing: ", table.row_lengths[i]);

@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     //printf("%d\n", encodedstats);
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
-    ls.print_stats_record(stats);
+    //ls.print_stats_record(stats);
 
 
     /* 
