@@ -112,6 +112,8 @@ void SelectorGen::generate(int **dest)
   if (rc.md * 3 <= payload_bits)
   {
     // even packing for largest numbers
+    printf("even packing for highest\n");
+
     int num_default_ints = payload_bits / rc.hst;
     if (selected < 1) // check if have already allowed for largest numbers in list
     {
@@ -121,6 +123,7 @@ void SelectorGen::generate(int **dest)
     }
 
     // even packing for high exception
+    printf("even packing for high exception\n");
     int num_high_ints = payload_bits / rc.hxp;
     int largestpackable = payload_bits / num_high_ints;
     if (num_high_ints != num_default_ints)
@@ -131,6 +134,7 @@ void SelectorGen::generate(int **dest)
     }
 
     // even packing for modal bitwidth
+    printf("even packing for modal bitwidth\n");
     int num_mode_ints = payload_bits / rc.md;
     largestpackable = payload_bits / num_mode_ints;
     if (num_mode_ints != num_high_ints)
@@ -153,6 +157,7 @@ void SelectorGen::generate(int **dest)
     
     while (bits_available >= rc.hxp)
       {
+	printf("while bits_available\n");
 	combination[i++] = rc.hxp;
 	uint j = 0;
 	bits_available -= rc.hxp;
@@ -202,7 +207,7 @@ void SelectorGen::generate(int **dest)
       }
     }
   }
-  //printf("generated %d selectors\n", selected);
+  printf("generated %d selectors\n", selected);
 }
 
 
@@ -238,28 +243,20 @@ SelectorGen::selector_table SelectorGen::convert_table(int **table)
 {
   selector_table result;
     
-  // get number of rows
   int numrows = get_num_rows();
-  // for (uint i = 0; i < num_selectors; i++)
-  // {
-  //   if (table[i][0] == 0)
-  //   {
-  //     numrows = i;
-  //     break;
-  //   }
-  // }
-  // //printf("            numrows = %d\n", numrows);
-  // result.rows = numrows;
-
-
-  result.rows = selected;
-  result.row_lengths = new int[selected];
-  result.bitwidths = new int*[selected];
+  result.rows = numrows;
+  result.row_lengths = new int[numrows];
+  result.bitwidths = new int*[numrows];
 
   // get length of longest row
+  // this is a problem, this can't find the 28 int packings
   int maxlength, rowlength = 0;
   int *temp_row_lengths = new int[numrows];
+  // look at each row
   for (int i = 0; i < numrows; i++)
+  {
+    // find length of each row
+    // maybe i should be recording row lengths during table generation instead.
     for (int j = 0; j < 28; j++)   ///// this '28' here is dangerous! fix this!!!
       if (table[i][j] == 0)
       {
@@ -269,6 +266,8 @@ SelectorGen::selector_table SelectorGen::convert_table(int **table)
 	temp_row_lengths[i] = j;
 	break;
       }
+  }
+  
   
   // write out rows longest to shortest
   // for each length starting with longest

@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     //printf("%d\n", encodedstats);
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
-    //ls.print_stats_record(stats);
+    ls.print_stats_record(stats);
 
 
     /* 
@@ -71,10 +71,10 @@ int main(int argc, char *argv[])
       table[i] = new int[32 - selectorbits];
     generator.generate(table);
  
-    //generator.print_table(table);
+    generator.print_table(table);
 
     SelectorGen::selector_table st = generator.convert_table(table);
-    generator.print_converted_table(st);
+    //generator.print_converted_table(st);
 
     
 
