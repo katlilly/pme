@@ -92,11 +92,6 @@ class SelectorGen
    */
   void add_perm_to_table(uint *row, int length);
 
-  /* 
-     Sort the rows in the selector table so that no row has more ints
-     to pack than a row before it
-   */
-  void sort_table(int **table);
 
   static void print_perm(int *permutation, int length);
   static void add_perm_to_table(int **table, uint row, int *permutation, int length);

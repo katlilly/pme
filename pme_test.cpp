@@ -73,9 +73,8 @@ int main(int argc, char *argv[])
     for (int i = 0; i < numselectors; i++)
       table[i] = new int[32 - selectorbits];
     generator.generate(table);
-    //if (stats.hst == 1)
     //generator.print_table(table);
-    //printf("Converting table\n");
+
     SelectorGen::selector_table st = generator.convert_table(table);
     generator.print_converted_table(st);
     //printf("Converted table\n");
