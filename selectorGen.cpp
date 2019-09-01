@@ -72,10 +72,24 @@ void SelectorGen::generate(int **dest)
 
   selected = 0;
 
+  
+  /* this case does occur, even in WSJ collection. Below algorithm
+     doesn't deal with this correctly, so need to treat it separately
+     here */
+  if (rc.hst == 1)
+  {
+    for (int i = 0; i < payload_bits; i++)
+      dest[0][i] = 1;
+    
+    selected = 1;
+    return;
+  }
+  
   /* add the 28 bit selector if needed */
   if (rc.hst * 2 > payload_bits)
     dest[selected++][0] = payload_bits;
 
+  
   /* First deal with short lists (defined as lists where you can't
      gain anything from using a combination of mode and high
      exception */
@@ -97,7 +111,7 @@ void SelectorGen::generate(int **dest)
     }
   }
 
-  /* catch those few cases that don't get a 2 int selector in above
+  /* Catch those few cases that don't get a 2 int selector in above
      for loop but could use one */
   if (selected < 1 && rc.lst*2 < payload_bits && rc.hst*3 > payload_bits)
   {
@@ -106,13 +120,13 @@ void SelectorGen::generate(int **dest)
     selected++;
   }
 
-  // this should be <=, not < ... fix when have time to test properly
   /* Different set of rules for longer lists */
+  // this should be <=, not < ... fix when have time to test properly
   //if (rc.md * 2 + rc.hxp < payload_bits)
   if (rc.md * 3 <= payload_bits)
   {
     // even packing for largest numbers
-    printf("even packing for highest\n");
+    //printf("even packing for highest\n");
 
     int num_default_ints = payload_bits / rc.hst;
     if (selected < 1) // check if have already allowed for largest numbers in list
@@ -123,7 +137,7 @@ void SelectorGen::generate(int **dest)
     }
 
     // even packing for high exception
-    printf("even packing for high exception\n");
+    //printf("even packing for high exception\n");
     int num_high_ints = payload_bits / rc.hxp;
     int largestpackable = payload_bits / num_high_ints;
     if (num_high_ints != num_default_ints)
@@ -134,7 +148,7 @@ void SelectorGen::generate(int **dest)
     }
 
     // even packing for modal bitwidth
-    printf("even packing for modal bitwidth\n");
+    //printf("even packing for modal bitwidth\n");
     int num_mode_ints = payload_bits / rc.md;
     largestpackable = payload_bits / num_mode_ints;
     if (num_mode_ints != num_high_ints)
@@ -157,7 +171,7 @@ void SelectorGen::generate(int **dest)
     
     while (bits_available >= rc.hxp)
       {
-	printf("while bits_available\n");
+	//printf("while bits_available\n");
 	combination[i++] = rc.hxp;
 	uint j = 0;
 	bits_available -= rc.hxp;
@@ -207,7 +221,7 @@ void SelectorGen::generate(int **dest)
       }
     }
   }
-  printf("generated %d selectors\n", selected);
+  //printf("generated %d selectors\n", selected);
 }
 
 

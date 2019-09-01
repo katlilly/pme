@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
     ls.calculate_stats(bitwidths, length);
     //ls.print_stats_short();
 
+    
     /*
       Encode the calculated statistics into 32 bits, then decode into
       a struct
@@ -56,12 +57,14 @@ int main(int argc, char *argv[])
     ls.print_stats_record(stats);
 
 
+ 
+	
     /* 
        Generate a selector table for current list based on its
        decoded statistics
      */
     // obviously should change inputs so this takes the struct rather
-    // than each of its elements
+    // than each of its elements, too easy to screw this up as is
     int selectorbits = 4;
     SelectorGen generator(selectorbits, stats.lst, stats.md, stats.hxp, stats.hst);
     int numselectors = 16;
@@ -70,13 +73,13 @@ int main(int argc, char *argv[])
     for (int i = 0; i < numselectors; i++)
       table[i] = new int[32 - selectorbits];
     generator.generate(table);
- 
-    generator.print_table(table);
-
+    //if (stats.hst == 1)
+    //generator.print_table(table);
+    //printf("Converting table\n");
     SelectorGen::selector_table st = generator.convert_table(table);
-    //generator.print_converted_table(st);
+    generator.print_converted_table(st);
+    //printf("Converted table\n");
 
-    
 
 
     listnumber++;
