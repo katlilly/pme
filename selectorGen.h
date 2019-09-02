@@ -75,6 +75,11 @@ class SelectorGen
   
   selector_table convert_table(int **table);
 
+  int get_selector_size();
+
+  int get_num_selectors();
+
+  
  private:
   
   /*
@@ -86,14 +91,11 @@ class SelectorGen
     Find the next in-order permutation of a row of bitwidths
    */
   int next_lex_perm(int *a, int n);
-  
+
   /*
-    Add a row to the selector table using the current permutation
+    Add a row to the selector table using the current permutation,
+    used as callback by generate_perms function
    */
-  void add_perm_to_table(uint *row, int length);
-
-
-  static void print_perm(int *permutation, int length);
   static void add_perm_to_table(int **table, uint row, int *permutation, int length);
 
 

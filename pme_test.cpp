@@ -43,8 +43,6 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
-    //ls.print_stats_short();
-
     
     /*
       Encode the calculated statistics into 32 bits, then decode into
@@ -55,8 +53,6 @@ int main(int argc, char *argv[])
     ls.encode_stats(&encodedstats);
     ListStats::record stats = ls.decode_stats(&encodedstats);
     ls.print_stats_record(stats);
-
-
  
 	
     /* 
@@ -65,9 +61,12 @@ int main(int argc, char *argv[])
      */
     // obviously should change inputs so this takes the struct rather
     // than each of its elements, too easy to screw this up as is
-    int selectorbits = 4;
-    SelectorGen generator(selectorbits, stats.lst, stats.md, stats.hxp, stats.hst);
-    int numselectors = 16;
+    int selectorbitstouse = 4;
+    SelectorGen generator(selectorbitstouse, stats.lst, stats.md, stats.hxp, stats.hst);
+    int selectorbits = generator.get_selector_size();
+    int numselectors = generator.get_num_selectors();
+    
+    
     int **table = new int*[numselectors];
 
     for (int i = 0; i < numselectors; i++)
