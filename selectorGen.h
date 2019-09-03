@@ -57,9 +57,8 @@ class SelectorGen
     that list and the chosen size of the table (how many bits we chose
     to set aside for the selector).
    */
-  void old_generate(int **dest);
 
-  void new_generate(selector_table *table);
+  void generate(selector_table *table);
   
   /*
     Check how many rows have been used in selector. Useful for
@@ -70,13 +69,9 @@ class SelectorGen
   /*
     Print the selector table to screen. for error checking.
    */
-  void print_table(int **table);
 
-
-  void print_converted_table(selector_table table);
+  void print_table(selector_table table);
   
-  selector_table convert_table(int **table);
-
   int get_selector_size();
 
   int get_num_selectors();

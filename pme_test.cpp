@@ -29,13 +29,11 @@ int main(int argc, char *argv[])
   */
   while (fread(&length, sizeof(length), 1, fp)  == 1)
   {    
-    /* Read one postings list (and make sure we did so successfully) */
+    /* 
+       Read one postings list (and make sure we did so successfully) 
+    */
     if (fread(postings_list, sizeof(*postings_list), length, fp) != length)
-    {
       exit(printf("i/o error\n"));
-    }
-    //printf("list number %d, length = %d\n", listnumber, length);
-
 
     /*
       Calculate bitwidth statistics for current list
@@ -43,14 +41,15 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
+    uint encodedstats;
+    ls.encode_stats(&encodedstats);
     
     /*
       Encode the calculated statistics into 32 bits, then decode into
       a struct
     */
-    uint encodedstats;
-    //printf("%d\n", encodedstats);
-    ls.encode_stats(&encodedstats);
+    /// move this bit, selector generator should just take this 32 bits rather than the struct ///
+
     ListStats::record stats = ls.decode_stats(&encodedstats);
     ls.print_stats_record(stats);
  
@@ -67,19 +66,8 @@ int main(int argc, char *argv[])
     int numselectors = generator.get_num_selectors();
 
     SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
-    generator.new_generate(newtable);
-    
-    // int **table = new int*[numselectors];
-
-    // for (int i = 0; i < numselectors; i++)
-    //   table[i] = new int[32 - selectorbits];
-    //generator.old_generate(table);
-    //generator.print_table(table);
-
-    //SelectorGen::selector_table st = generator.convert_table(table);
-    generator.print_converted_table(*newtable);
-    //printf("Converted table\n");
-
+    generator.generate(newtable);
+    generator.print_table(*newtable);
 
     delete newtable;
     listnumber++;
