@@ -4,7 +4,8 @@
 #include "selectorGen.h"
 
 /* 
-   Get the number of bits used for the selector. This is set by the constructor
+   Get the number of bits used for the selector. This is always set by
+   the constructor
 */
 int SelectorGen::get_selector_size()
 {
@@ -26,7 +27,7 @@ int SelectorGen::get_num_selectors()
 
 /* 
    Get the number of selectors generated for the selector table for
-   this list. The number of rows in the table
+   this list. The number of rows in the generated table
 */
 int SelectorGen::get_num_rows()
 {
@@ -62,6 +63,40 @@ void SelectorGen::print_stats(void)
 
 void SelectorGen::generate(selector_table *table)
 {
+  /* This is a rare special case that needs to be dealt with separately.
+     This case (where largest number in list is 1) does occur, even in
+     WSJ collection. Below algorithm doesn't deal with this correctly,
+     so need to treat it separately here */
+  if (high_exception == 1)
+  {
+    if (highest == 1)
+    {
+      table->rows = 1;
+      selected = 1;
+    }
+    else
+    {
+      table->rows = 2;
+      selected = 2;
+    }
+
+    table->row_lengths = new int[table->rows];
+    table->row_lengths[0] = payload_bits;
+    table->bitwidths = new int*[table->rows];
+    table->bitwidths[0] = new int[payload_bits];
+    for (int i = 0; i < payload_bits; i++)
+      table->bitwidths[0][i] = 1;
+
+    if (highest > 1)
+    {
+      table->bitwidths[1] = new int[1];
+      table->bitwidths[1][0] = payload_bits;
+      table->row_lengths[1] = 1;
+    }
+    return;
+  }
+
+  
   /* Create and initialise a temporary matrix for use in creating the
      selector table, and a list of row lengths*/
   int *temp_row_lengths = new int[selected];
@@ -76,25 +111,7 @@ void SelectorGen::generate(selector_table *table)
   }
   selected = 0;
   
-  /* this case (where largest number in list is 1) does occur, even in
-     WSJ collection. Below algorithm doesn't deal with this correctly,
-     so need to treat it separately here */
-  // this should come before creating temp matrix /////////////////////////////////////
-  if (highest == 1)
-  {
-    table->rows = 1;
-    table->row_lengths = new int[1];
-    table->row_lengths[0] = payload_bits;
-    table->bitwidths = new int*[1];
-    table->bitwidths[0] = new int[payload_bits];
-    for (int i = 0; i < payload_bits; i++)
-      table->bitwidths[0][i] = 1;
-    //temp_row_lengths[selected] = payload_bits;
-    selected = 1;
-    
-    return;
-  }
-
+  
  /* add the full size "28 bit" selector if needed */
   if (highest * 2 > payload_bits)
   {
@@ -270,8 +287,8 @@ void SelectorGen::generate(selector_table *table)
     if (temp_row_lengths[i] > maxlength)
       maxlength = temp_row_lengths[i];
 
-  printf("max ints per row: %d\n", maxlength);
-  printf("number of selectors: %d\n\n", selected);
+  //printf("max ints per row: %d\n", maxlength);
+  //printf("number of selectors: %d\n\n", selected);
 
   /* write out selectors and their lengths, longest to shortest */
   int count = 0;

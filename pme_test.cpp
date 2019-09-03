@@ -52,9 +52,15 @@ int main(int argc, char *argv[])
     SelectorGen generator(selectorsize, encodedstats);
     SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
     generator.generate(newtable);
-    generator.print_stats();
-    generator.print_table(*newtable);
+    if (generator.high_exception ==1 )//|| generator.lowest == 1)
+    {
+      printf("list number: %d\n", listnumber);
+      printf("list length: %d\n", length);
 
+      generator.print_stats();
+      generator.print_table(*newtable);
+    }
+      
     delete newtable;
     listnumber++;
   }
