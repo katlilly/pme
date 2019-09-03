@@ -34,7 +34,7 @@ int SelectorGen::get_num_rows()
 }
 
 /* 
-   Print the converted version of the selector table
+   Print the selector table
 */
 void SelectorGen::print_table(selector_table table)
 {
@@ -48,6 +48,17 @@ void SelectorGen::print_table(selector_table table)
   printf("\n=============================\n\n");
 }
 
+/* 
+   Print the statistics for the current list
+*/
+void SelectorGen::print_stats(void)
+{
+  printf("Lowest: %d\n", lowest);
+  printf("Mode: %d\n", mode);
+  printf("High exception: %d\n", high_exception);
+  printf("Highest: %d\n\n", highest);
+ return;
+}
 
 void SelectorGen::generate(selector_table *table)
 {
@@ -69,7 +80,7 @@ void SelectorGen::generate(selector_table *table)
      WSJ collection. Below algorithm doesn't deal with this correctly,
      so need to treat it separately here */
   // this should come before creating temp matrix /////////////////////////////////////
-  if (rc.hst == 1)
+  if (highest == 1)
   {
     table->rows = 1;
     table->row_lengths = new int[1];
@@ -85,7 +96,7 @@ void SelectorGen::generate(selector_table *table)
   }
 
  /* add the full size "28 bit" selector if needed */
-  if (rc.hst * 2 > payload_bits)
+  if (highest * 2 > payload_bits)
   {
     temp_row_lengths[selected] = 1;
     temptable[selected++][0] = payload_bits;
@@ -94,11 +105,11 @@ void SelectorGen::generate(selector_table *table)
 /* First deal with short lists (defined as lists where you can't
      gain anything from using a combination of mode and high
      exception) */
-  if ((rc.md * 2 + rc.hxp) > payload_bits) 
+  if ((mode * 2 + high_exception) > payload_bits) 
   {
-    uint start = rc.lst;
-    if (start < payload_bits - rc.hst)
-      start = payload_bits - rc.hst; 
+    uint start = lowest;
+    if (start < payload_bits - highest)
+      start = payload_bits - highest; 
     
     for (uint i = start; i <= payload_bits - start; i++)
       if (selected < num_selectors)
@@ -116,8 +127,8 @@ void SelectorGen::generate(selector_table *table)
      for loop but could use one
   */
   if (selected < 1 &&
-      rc.lst * 2 < payload_bits &&
-      rc.hst * 3 > payload_bits)
+      lowest * 2 < payload_bits &&
+      highest * 3 > payload_bits)
   {
     temp_row_lengths[selected] = 2;
     temptable[selected][0] = payload_bits / 2;
@@ -128,22 +139,22 @@ void SelectorGen::generate(selector_table *table)
 /* Different set of rules for longer lists */
   // this should be <=, not <  ...fix when have time to test properly
   //if (rc.md * 2 + rc.hxp < payload_bits)
-  if (rc.md * 3 <= payload_bits)
+  if (mode * 3 <= payload_bits)
   {
     // even packing for largest numbers
-    int num_default_ints = payload_bits / rc.hst;
+    int num_default_ints = payload_bits / highest;
     if (selected < 1) // this checks if largest numbers have already been allowed for
     {
       for (int i = 0; i < num_default_ints; i++)
       {
 	temp_row_lengths[selected] = num_default_ints;
-      	temptable[selected][i] = rc.hst;
+      	temptable[selected][i] = highest;
       }
       selected++;
     }
 
     // even packing for high exception
-    int num_high_ints = payload_bits / rc.hxp;
+    int num_high_ints = payload_bits / high_exception;
     int largestpackable = payload_bits / num_high_ints;
     if (num_high_ints != num_default_ints)
     {
@@ -156,7 +167,7 @@ void SelectorGen::generate(selector_table *table)
     }
 
     // even packing for modal bitwidth
-    int num_mode_ints = payload_bits / rc.md;
+    int num_mode_ints = payload_bits / mode;
     largestpackable = payload_bits / num_mode_ints;
     if (num_mode_ints != num_high_ints)
     {
@@ -180,20 +191,20 @@ void SelectorGen::generate(selector_table *table)
     uint bits_available = payload_bits;
     uint i = 0;
     
-    while (bits_available >= rc.hxp)
+    while (bits_available >= high_exception)
       {
-	combination[i++] = rc.hxp;
+	combination[i++] = high_exception;
 	uint j = 0;
-	bits_available -= rc.hxp;
-	while (bits_available >= rc.md && j < 3)
+	bits_available -= high_exception;
+	while (bits_available >= mode && j < 3)
 	  {
-	    combination[i++] = rc.md;
+	    combination[i++] = mode;
 	    j++;
-	    bits_available -= rc.md;
+	    bits_available -= mode;
 	  }
       }
-    if (bits_available >= rc.md)
-      combination[i] = rc.md;
+    if (bits_available >= mode)
+      combination[i] = mode;
 
     /* Sort the combination, then make and count the permutations */
     int comb_length = 0;
@@ -237,11 +248,11 @@ void SelectorGen::generate(selector_table *table)
        of the low exception */
     if (selected < num_selectors)
       {
-	int num_low_ints = payload_bits / rc.lst;
+	int num_low_ints = payload_bits / lowest;
 	if (num_low_ints != num_mode_ints)
 	  {
 	    for (int i = 0; i < num_low_ints; i++)
-	      temptable[selected][i] = rc.lst;
+	      temptable[selected][i] = lowest;
 	    selected++;
 	  }
       }

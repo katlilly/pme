@@ -36,37 +36,23 @@ int main(int argc, char *argv[])
       exit(printf("i/o error\n"));
 
     /*
-      Calculate bitwidth statistics for current list
+       Calculate bitwidth statistics for current list
     */
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
     uint encodedstats;
     ls.encode_stats(&encodedstats);
-    
-    /*
-      Encode the calculated statistics into 32 bits, then decode into
-      a struct
-    */
-    /// move this bit, selector generator should just take this 32 bits rather than the struct ///
-
-    ListStats::record stats = ls.decode_stats(&encodedstats);
-    ls.print_stats_record(stats);
- 
 	
     /* 
-       Generate a selector table for current list based on its
-       decoded statistics
+       Generate a selector table for current list based on its decoded
+       statistics
      */
-    // obviously should change inputs so this takes the struct rather
-    // than each of its elements, too easy to screw this up as is
-    int selectorbitstouse = 4;
-    SelectorGen generator(selectorbitstouse, stats.lst, stats.md, stats.hxp, stats.hst);
-    int selectorbits = generator.get_selector_size();
-    int numselectors = generator.get_num_selectors();
-
+    int selectorsize = 4;
+    SelectorGen generator(selectorsize, encodedstats);
     SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
     generator.generate(newtable);
+    generator.print_stats();
     generator.print_table(*newtable);
 
     delete newtable;
