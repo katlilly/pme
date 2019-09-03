@@ -65,21 +65,23 @@ int main(int argc, char *argv[])
     SelectorGen generator(selectorbitstouse, stats.lst, stats.md, stats.hxp, stats.hst);
     int selectorbits = generator.get_selector_size();
     int numselectors = generator.get_num_selectors();
-    
-    
-    int **table = new int*[numselectors];
 
-    for (int i = 0; i < numselectors; i++)
-      table[i] = new int[32 - selectorbits];
-    generator.generate(table);
+    SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
+    generator.new_generate(newtable);
+    
+    // int **table = new int*[numselectors];
+
+    // for (int i = 0; i < numselectors; i++)
+    //   table[i] = new int[32 - selectorbits];
+    //generator.old_generate(table);
     //generator.print_table(table);
 
-    SelectorGen::selector_table st = generator.convert_table(table);
-    generator.print_converted_table(st);
+    //SelectorGen::selector_table st = generator.convert_table(table);
+    generator.print_converted_table(*newtable);
     //printf("Converted table\n");
 
 
-
+    delete newtable;
     listnumber++;
   }
 
