@@ -67,8 +67,9 @@ void SelectorGen::new_generate(selector_table *table)
   /* Create and initialise a temporary matrix for use in creating the
      selector table, and a list of row lengths*/
   int *temp_row_lengths = new int[selected];
-  int** temptable = new int*[selector_bits];
-  for (int i = 0; i < selector_bits; i++)
+  int max_rows = get_num_selectors();
+  int** temptable = new int*[max_rows];
+  for (int i = 0; i < max_rows; i++)
   {
     temp_row_lengths[i] = 0;
     temptable[i] = new int[payload_bits];
@@ -80,12 +81,19 @@ void SelectorGen::new_generate(selector_table *table)
   /* this case (where largest number in list is 1) does occur, even in
      WSJ collection. Below algorithm doesn't deal with this correctly,
      so need to treat it separately here */
+  // this should come before creating temp matrix /////////////////////////////////////
   if (rc.hst == 1)
   {
+    table->rows = 1;
+    table->row_lengths = new int[1];
+    table->row_lengths[0] = payload_bits;
+    table->bitwidths = new int*[1];
+    table->bitwidths[0] = new int[payload_bits];
     for (int i = 0; i < payload_bits; i++)
-      temptable[0][i] = 1;
-    temp_row_lengths[selected] = payload_bits;
+      table->bitwidths[0][i] = 1;
+    //temp_row_lengths[selected] = payload_bits;
     selected = 1;
+    
     return;
   }
 
@@ -264,8 +272,8 @@ void SelectorGen::new_generate(selector_table *table)
     if (temp_row_lengths[i] > maxlength)
       maxlength = temp_row_lengths[i];
 
-  printf("longest row: %d\n", maxlength);
-
+  printf("max ints per row: %d\n", maxlength);
+  printf("number of selectors: %d\n\n", selected);
 
   /* write out selectors and their lengths, longest to shortest */
   int count = 0;
@@ -285,9 +293,9 @@ void SelectorGen::new_generate(selector_table *table)
 
   
   
-  for (int i= 0; i < selector_bits; i++)
-    delete [] temptable[i];
-  delete [] temptable;
+  //for (int i= 0; i < selected; i++)
+  //delete [] temptable[i];
+  //delete [] temptable;
 
   delete [] temp_row_lengths;
   
