@@ -41,10 +41,21 @@ void SelectorGen::print_table(selector_table table)
 {
   for (int i = 0; i < table.rows; i++)
   {
+    int sum = 0;
     printf("%d int packing: ", table.row_lengths[i]);
     for (int j = 0; j < table.row_lengths[i]; j++)
+    {
+      sum += table.bitwidths[i][j];
       printf("%d ", table.bitwidths[i][j]);
-    printf("\n");
+    }
+    printf(" = %d bits used\n", sum);
+    if (sum > payload_bits)
+      printf("******************* exceedes payload size ****************\n");
+    //if (sum <= payload_bits - mode)
+    //printf("******************* arguably underful payload ************\n");
+    if (sum <= payload_bits - table.bitwidths[i][0])
+      printf("******************* underful payload ************\n");
+	
   }
   printf("\n=============================\n\n");
 }
@@ -93,12 +104,13 @@ void SelectorGen::generate(selector_table *table)
       table->bitwidths[1][0] = payload_bits;
       table->row_lengths[1] = 1;
     }
+    printf("created %d rows by the special case method\n", table->rows);
     return;
   }
 
   
   /* Create and initialise a temporary matrix for use in creating the
-     selector table, and a list of row lengths*/
+     selector table, and a list of row lengths */
   int *temp_row_lengths = new int[selected];
   int max_rows = get_num_selectors();
   int** temptable = new int*[max_rows];
@@ -115,8 +127,10 @@ void SelectorGen::generate(selector_table *table)
  /* add the full size "28 bit" selector if needed */
   if (highest * 2 > payload_bits)
   {
+    //printf("full size selector\n");
     temp_row_lengths[selected] = 1;
     temptable[selected++][0] = payload_bits;
+    printf("added the 28 bit selector, %d rows created\n", selected);
   }
   
 /* First deal with short lists (defined as lists where you can't
@@ -124,6 +138,8 @@ void SelectorGen::generate(selector_table *table)
      exception) */
   if ((mode * 2 + high_exception) > payload_bits) 
   {
+    //printf("selected = %d\n", selected);
+    //printf("short lists\n");
     uint start = lowest;
     if (start < payload_bits - highest)
       start = payload_bits - highest; 
@@ -134,6 +150,7 @@ void SelectorGen::generate(selector_table *table)
 	temp_row_lengths[selected] = 2;
 	temptable[selected][0] = i;
 	temptable[selected++][1] = payload_bits - i;
+	printf("added a 2 int selector, %d rows created\n", selected);
       }
       else
 	;//exit(printf("ran out of selectors, this shouldn't happen\n"));
@@ -150,7 +167,9 @@ void SelectorGen::generate(selector_table *table)
     temp_row_lengths[selected] = 2;
     temptable[selected][0] = payload_bits / 2;
     temptable[selected][1] = payload_bits - temptable[selected][0];
+    //printf("%d %d\n",temptable[selected][0], temptable[selected][1]);
     selected++;
+    printf("added a 2 int selector by the less common method, %d rows\n", selected);
   }
 
 /* Different set of rules for longer lists */
@@ -164,10 +183,13 @@ void SelectorGen::generate(selector_table *table)
     {
       for (int i = 0; i < num_default_ints; i++)
       {
+	//printf("selected = %d\n", selected);
+	//printf("num default ints %d, highest %d\n", num_default_ints, highest);
 	temp_row_lengths[selected] = num_default_ints;
       	temptable[selected][i] = highest;
       }
       selected++;
+      printf("*****added even packing for largest numbers, %d x %dbits, %d rows\n", num_default_ints, highest, selected);
     }
 
     // even packing for high exception
@@ -177,10 +199,14 @@ void SelectorGen::generate(selector_table *table)
     {
       for (int i = 0; i < num_high_ints; i++)
       {
+	//printf("selected = %d\n", selected);
+	//printf("num high ints %d, largest packable %d\n", num_high_ints, largestpackable);
 	temp_row_lengths[selected] = num_high_ints;
 	temptable[selected][i] = largestpackable;
       }
       selected++;
+      printf("+++++added even packing of high exception, %d x %dbits, %d rows\n", num_high_ints, largestpackable, selected);
+
     }
 
     // even packing for modal bitwidth
@@ -188,12 +214,16 @@ void SelectorGen::generate(selector_table *table)
     largestpackable = payload_bits / num_mode_ints;
     if (num_mode_ints != num_high_ints)
     {
+      //printf("selected = %d\n", selected);
+      //printf("num mode ints %d, largest packable %d\n", num_mode_ints, largestpackable);
+
       for (int i = 0; i < num_mode_ints; i++)
       {
 	temp_row_lengths[selected] = num_mode_ints;
 	temptable[selected][i] = largestpackable;
       }
       selected++;
+      printf("=====added even packing of mode, %d x %dbits, %d rows\n", num_mode_ints, largestpackable, selected);
     }
     
     /* Generate the most useful bitwidth combination. The (unweighted)
@@ -201,7 +231,14 @@ void SelectorGen::generate(selector_table *table)
        is 0.24, so I am using a combination of mode plus 25%
        exceptions */
     /// perhaps should move this to a separate function
+
+
+    // this is not necessarily the correct condition, but is a very
+    // very good approximation
+    if (mode < 7)
+    {
     int *combination = new int[payload_bits];
+    
     for (uint i = 0; i < payload_bits; i++)
       combination[i] = 0;
     
@@ -256,25 +293,34 @@ void SelectorGen::generate(selector_table *table)
     for (uint i = 0; i < num_selectors; i++)
       if (temptable[i][0] == 0)
 	{
-	  selected = i;
+	  selected = i;// + 1 ??
 	  break;
 	}
-
+    printf(".....added some permutations, %d rows\n", selected);
+    } // end permutations code
     
     /* If there is room left in selector table add in an even packing
        of the low exception */
+    // checked and found to be correct, problem is not here
     if (selected < num_selectors)
       {
+	//printf("selected = %d\n", selected);
 	int num_low_ints = payload_bits / lowest;
 	if (num_low_ints != num_mode_ints)
 	  {
 	    for (int i = 0; i < num_low_ints; i++)
 	      temptable[selected][i] = lowest;
+	    temp_row_lengths[selected] = num_low_ints;
 	    selected++;
+	    printf("-----added even packing of low exception, %d x %dbits, %d rows\n", num_low_ints, lowest, selected);
 	  }
       }
   }
 
+
+  // maybe the problem occurs below, try printing out matrix here
+
+  
 
   /* now we have the 2d matrix version, convert it to a proper selector table*/
   table->rows = selected;
@@ -290,10 +336,11 @@ void SelectorGen::generate(selector_table *table)
   //printf("max ints per row: %d\n", maxlength);
   //printf("number of selectors: %d\n\n", selected);
 
+
   /* write out selectors and their lengths, longest to shortest */
   int count = 0;
   while (count < selected)
-    for (int i = maxlength; i > 0; i--)
+    for (int i = maxlength; i >= 0; i--)
       for (int j = 0; j < selected; j++)
 	if (temp_row_lengths[j] == i)
 	{

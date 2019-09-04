@@ -49,19 +49,22 @@ int main(int argc, char *argv[])
        statistics
      */
     int selectorsize = 4;
-    SelectorGen generator(selectorsize, encodedstats);
-    SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
-    generator.generate(newtable);
-    if (generator.high_exception ==1 )//|| generator.lowest == 1)
+    
+    //if (listnumber == 58)
+    if (true)
     {
+      SelectorGen generator(selectorsize, encodedstats);
+      SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
+      generator.generate(newtable);
+      
       printf("list number: %d\n", listnumber);
-      printf("list length: %d\n", length);
+      printf("list length: %u\n", length);
 
       generator.print_stats();
       generator.print_table(*newtable);
     }
       
-    delete newtable;
+    //delete newtable;
     listnumber++;
   }
 
