@@ -41,32 +41,35 @@ int main(int argc, char *argv[])
     ListStats ls(listnumber, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     ls.calculate_stats(bitwidths, length);
-    uint encodedstats;
+    uint32_t encodedstats;
     ls.encode_stats(&encodedstats);
 	
     /* 
-       Generate a selector table for current list based on its decoded
-       statistics
+       Generate a selector table for current list based on its statistics
      */
     int selectorsize = 4;
     
-    //if (listnumber == 58)
+    //if (listnumber == 2973)
     if (true)
     {
       SelectorGen generator(selectorsize, listnumber, encodedstats);
-      SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
-      newtable->row_lengths = new int[generator.get_num_selectors()];
-      newtable->bitwidths = new int*[generator.get_num_selectors()];
-      generator.smart_generate(newtable);
+      SelectorGen::selector_table *table = new SelectorGen::selector_table;
+      int size = generator.get_num_selectors();
+      table->row_lengths = new int[size];
+      table->bitwidths = new int*[size];
+      generator.generate(table);
       
-      //printf("list number: %d\n", listnumber);
-      //printf("list length: %u\n", length);
+      printf("list number: %d\n", listnumber);
+      printf("list length: %u\n", length);
 
-      //generator.print_stats();
-      generator.print_table(*newtable);
+      generator.print_stats();
+      generator.print_table(*table);
 
-      delete [] newtable->row_lengths;
-      
+      delete [] table->row_lengths;
+      //for (int i = 0; i < size; i++)
+      //if (newtable->bitwidths[i])
+      //    delete [] newtable->bitwidths[i];
+      //delete [] newtable->bitwidths;
       
     }
       
@@ -76,9 +79,6 @@ int main(int argc, char *argv[])
 
   delete [] postings_list;
   delete [] bitwidths;
-  //for (int i = 0; i < numselectors; i++)
-  //delete [] table[i];
-  //delete [] table;
 
   fclose(fp);
   

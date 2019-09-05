@@ -55,10 +55,6 @@ class SelectorGen
   */
   void generate(selector_table *table);
 
-
-  void smart_generate(selector_table *table);
-
-
   
   /* 
      Get the number of bits to be used for the selector. This is set by the
@@ -97,7 +93,7 @@ class SelectorGen
   void add_one_int_selector(selector_table *table, int row);
   int add_two_dgap_selectors(selector_table *table, int row);
   int add_other_two_dgap_selector(selector_table *table, int row);
-  int pack_largest(selector_table *table, int row);
+  int add_even_packings(selector_table *table, int row);
   int add_permutations(selector_table *table, int row);
   int add_low_exception(selector_table *table, int row);
 
