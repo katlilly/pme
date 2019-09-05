@@ -321,8 +321,6 @@ void SelectorGen::generate(selector_table *table)
   /* 
     Add an even packing of the low exception if row(s) remaining.
   */
-  // also worth checking if this is not a duplicate of mode, as least
-  // in terms of number of ints packed
   if (row < num_selectors && lowest <= payload_bits / 3)
     row += add_low_exception(table, row);
  
