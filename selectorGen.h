@@ -4,6 +4,7 @@ class SelectorGen
 {
  public:
   int selector_bits;
+  int listnumber;
   uint lowest;
   uint mode;
   uint high_exception;
@@ -26,9 +27,10 @@ class SelectorGen
      as the number of bits we are chosing to use for the selector in
      the current experiment.
    */
-  SelectorGen(int selector_bits_in, uint encoded_stats) 
+  SelectorGen(int selector_bits_in, int list_num, uint encoded_stats) 
     {
       selector_bits = selector_bits_in;
+      listnumber = list_num;
       payload_bits = 32 - selector_bits;
       num_selectors = 1;
       for (int i = 0; i < selector_bits; i++)
@@ -53,6 +55,11 @@ class SelectorGen
   */
   void generate(selector_table *table);
 
+
+  void smart_generate(selector_table *table);
+
+
+  
   /* 
      Get the number of bits to be used for the selector. This is set by the
      constructor
@@ -83,11 +90,22 @@ class SelectorGen
   void print_stats(void);
   
  private:
+
+  /* below functions called by smart_generator() and add one or more
+     rows to the selector table */
+  int all_ones(selector_table *table);
+  void add_one_int_selector(selector_table *table, int row);
+  int add_two_dgap_selectors(selector_table *table, int row);
+  int add_other_two_dgap_selector(selector_table *table, int row);
+  int pack_largest(selector_table *table, int row);
+  int add_permutations(selector_table *table, int row);
+  int add_low_exception(selector_table *table, int row);
+
   /*
     Generate permutations of a row of bitwidths
    */
-  void generate_perms(int **table, uint row, int *x, int n,
-		      void callback(int**, uint, int *, int));
+  void generate_perms(selector_table *table, uint row, int *x, int n,
+		      void callback(selector_table*, uint, int *, int));
 
   /*
     Find the next in-order permutation of a row of bitwidths
@@ -98,7 +116,7 @@ class SelectorGen
     Add a row to the selector table using the current permutation,
     used as callback by generate_perms function
    */
-  static void add_perm_to_table(int **table, uint row, int *permutation,
+  static void add_perm_to_table(selector_table *table, uint row, int *permutation,
 				int length);
 
 };

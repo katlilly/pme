@@ -54,7 +54,7 @@ void SelectorGen::print_table(selector_table table)
     //if (sum <= payload_bits - mode)
     //printf("******************* arguably underful payload ************\n");
     if (sum <= payload_bits - table.bitwidths[i][0])
-      printf("******************* underful payload ************\n");
+      exit(printf("******************* underful payload ************\n"));
 	
   }
   printf("\n=============================\n\n");
@@ -72,21 +72,22 @@ void SelectorGen::print_stats(void)
  return;
 }
 
-void SelectorGen::generate(selector_table *table)
+/* 
+   Generate selector table for the rare case where all or 90% of
+   the dgaps are ones
+*/
+int SelectorGen::all_ones(selector_table *table)
 {
-  /* This is a rare special case that needs to be dealt with separately.
-     This case (where largest number in list is 1) does occur, even in
-     WSJ collection. Below algorithm doesn't deal with this correctly,
-     so need to treat it separately here */
-  if (high_exception == 1)
-  {
-    if (highest == 1)
+  //printf("list number: %d\n", listnumber);
+  if (highest == 1)
     {
+      //printf("listnumber = %d, highest == 1\n", listnumber);
       table->rows = 1;
       selected = 1;
     }
     else
     {
+      // actually i can do better than this
       table->rows = 2;
       selected = 2;
     }
@@ -100,278 +101,254 @@ void SelectorGen::generate(selector_table *table)
 
     if (highest > 1)
     {
+      // should also be including permutations of ones and highest
       table->bitwidths[1] = new int[1];
       table->bitwidths[1][0] = payload_bits;
       table->row_lengths[1] = 1;
     }
-    printf("created %d rows by the special case method\n", table->rows);
-    return;
+    return table->rows;
+}
+
+/*
+  Add the full-payload-size selector if needed
+ */
+void SelectorGen::add_one_int_selector(selector_table *table, int row)
+{
+  table->row_lengths[row] = 1;
+  table->bitwidths[row] = new int[1];
+  table->bitwidths[row][0] = payload_bits;
+  table->rows = row + 1;
+}
+
+
+int SelectorGen::add_two_dgap_selectors(selector_table *table, int row)
+{
+  uint start = lowest;
+  int count = 0;
+  if (start < payload_bits - highest)
+    start = payload_bits - highest; 
+    
+  for (uint i = start; i <= payload_bits - start; i++)
+    if (row < get_num_selectors())
+      {
+	table->row_lengths[row] = 2;
+	table->bitwidths[row] = new int[2];
+	table->bitwidths[row][0] = i;
+	table->bitwidths[row++][1] = payload_bits - i;
+	table->rows++;
+	count++;
+      }
+
+  return count;
+}
+
+/* 
+   Even packings for largest and modal dgaps
+*/
+int SelectorGen::pack_largest(selector_table *table, int row)
+{
+  int count = 0;
+
+  // even packing for largest numbers
+  int num_default_ints = payload_bits / highest;
+  if (row < 1) // this checks if largest dgaps have already been accomodated
+  {
+    table->row_lengths[row] = num_default_ints;
+    table->bitwidths[row] = new int[num_default_ints];
+    for (int i = 0; i < num_default_ints; i++)
+      table->bitwidths[row][i] = highest;
+    table->rows++;
+    count++;
+    row++;
   }
 
-  
-  /* Create and initialise a temporary matrix for use in creating the
-     selector table, and a list of row lengths */
-  int *temp_row_lengths = new int[selected];
-  int max_rows = get_num_selectors();
-  int** temptable = new int*[max_rows];
-  for (int i = 0; i < max_rows; i++)
+  // even packing for high exception
+  int num_high_ints = payload_bits / high_exception;
+  int largestpackable_hxp = payload_bits / num_high_ints;
+  if (num_high_ints != num_default_ints)
   {
-    temp_row_lengths[i] = 0;
-    temptable[i] = new int[payload_bits];
-    for (int j = 0; j < payload_bits; j++)
-      temptable[i][j] = 0;
+    table->row_lengths[row] = num_high_ints;
+    table->bitwidths[row] = new int[num_high_ints];
+    for (int i = 0; i < num_high_ints; i++)
+      table->bitwidths[row][i] = largestpackable_hxp;
+    table->rows++;
+    count++;
+    row++;
   }
-  selected = 0;
-  
-  
- /* add the full size "28 bit" selector if needed */
-  if (highest * 2 > payload_bits)
+
+  // even packing for modal bitwidth
+  int num_mode_ints = payload_bits / mode;
+  int largestpackable_md = payload_bits / num_mode_ints;
+  if (num_mode_ints != num_high_ints)
   {
-    //printf("full size selector\n");
-    temp_row_lengths[selected] = 1;
-    temptable[selected++][0] = payload_bits;
-    printf("added the 28 bit selector, %d rows created\n", selected);
+    table->row_lengths[row] = num_mode_ints;
+    table->bitwidths[row] = new int[num_mode_ints];
+    for (int i = 0; i < num_mode_ints; i++)
+      table->bitwidths[row][i] = largestpackable_md;
+    table->rows++;
+    count++;
   }
-  
-/* First deal with short lists (defined as lists where you can't
-     gain anything from using a combination of mode and high
-     exception) */
-  if ((mode * 2 + high_exception) > payload_bits) 
-  {
-    //printf("selected = %d\n", selected);
-    //printf("short lists\n");
-    uint start = lowest;
-    if (start < payload_bits - highest)
-      start = payload_bits - highest; 
-    
-    for (uint i = start; i <= payload_bits - start; i++)
-      if (selected < num_selectors)
-      {
-	temp_row_lengths[selected] = 2;
-	temptable[selected][0] = i;
-	temptable[selected++][1] = payload_bits - i;
-	printf("added a 2 int selector, %d rows created\n", selected);
-      }
-      else
-	;//exit(printf("ran out of selectors, this shouldn't happen\n"));
-  }
+
+  return count;
+}
+
+
+int SelectorGen::add_permutations(selector_table *table, int row)
+{
+  //printf("entered add_permutations()\n");
   
   /*
-    Catch those few cases that don't get a 2 int selector in above
+    Generate the most useful combination of bitwidths
+   */
+  int *combination = new int[payload_bits];
+  for (uint i = 0; i < payload_bits; i++)
+    combination[i] = 0;
+
+  uint bits_available = payload_bits;
+  uint i = 0;
+    
+  while (bits_available >= high_exception)
+    {
+      combination[i++] = high_exception;
+      uint j = 0;
+      bits_available -= high_exception;
+      while (bits_available >= mode && j < 3)
+	{
+	  combination[i++] = mode;
+	  j++;
+	  bits_available -= mode;
+	}
+    }
+  if (bits_available >= mode)
+    combination[i] = mode;
+
+  int comb_length = 0;
+  for (uint i = 0; i < payload_bits; i++)
+    {
+      if (combination[i] == 0)
+	break;
+      comb_length++;
+    }
+  std::sort(combination, combination + comb_length);
+  
+
+  /* Now make the permutations of that combination, copying to the
+     selector table until it is full or we run out of
+     permutations */
+  this->generate_perms(table, table->rows, combination, comb_length, add_perm_to_table);
+  delete [] combination;
+  
+  return num_selectors - row;
+}
+
+int SelectorGen::add_other_two_dgap_selector(selector_table *table, int row)
+{
+  table->row_lengths[row] = 2;
+  table->bitwidths[row] = new int[2];
+  table->bitwidths[row][0] = payload_bits / 2;
+  table->bitwidths[row][1] = payload_bits - table->bitwidths[row][0];
+  table->rows++;
+  //printf("added a 2 int selector by the less common method, %d rows\n", 1);
+
+  return 1;
+}
+
+
+int SelectorGen::add_low_exception(selector_table *table, int row)
+{
+  int num_low_ints = payload_bits / lowest;
+  table->row_lengths[row] = num_low_ints;
+  table->bitwidths[row] = new int[num_low_ints];
+  for (int i = 0; i < num_low_ints; i++)
+    table->bitwidths[row][i] = lowest;
+    
+  table->rows++;
+  return 1;
+}
+
+void SelectorGen::smart_generate(selector_table *table)
+{
+  int row = 0;
+
+  /* 
+     Deal with lists where more than 90% of dgaps are 1. Can return
+     directly after this if true
+  */
+  if (high_exception == 1)
+  {
+    row = all_ones(table);
+    return;
+  }
+  
+  /* 
+     Add the full payload size "28 bit" selector if needed
+  */
+  if (highest * 2 > payload_bits)
+    add_one_int_selector(table, row++);
+
+  /* 
+     Now deal with short lists (defined as lists where you can't
+     gain anything from using a combination of mode and high
+     exception)
+  */
+  if ((mode * 2 + high_exception) > payload_bits) 
+     row += add_two_dgap_selectors(table, row);
+
+  /*
+     Catch those few cases that don't get a 2 int selector in above
      for loop but could use one
   */
-  if (selected < 1 &&
+  if (row < 1 &&
       lowest * 2 < payload_bits &&
       highest * 3 > payload_bits)
-  {
-    temp_row_lengths[selected] = 2;
-    temptable[selected][0] = payload_bits / 2;
-    temptable[selected][1] = payload_bits - temptable[selected][0];
-    //printf("%d %d\n",temptable[selected][0], temptable[selected][1]);
-    selected++;
-    printf("added a 2 int selector by the less common method, %d rows\n", selected);
-  }
+    row += add_other_two_dgap_selector(table, row);
 
-/* Different set of rules for longer lists */
-  // this should be <=, not <  ...fix when have time to test properly
-  //if (rc.md * 2 + rc.hxp < payload_bits)
+  /* 
+     Even packing for largest numbers and high exception and mode.
+     Used for lists long enough that we can pack at least three dgaps
+     into one payload
+   */
   if (mode * 3 <= payload_bits)
-  {
-    // even packing for largest numbers
-    int num_default_ints = payload_bits / highest;
-    if (selected < 1) // this checks if largest numbers have already been allowed for
-    {
-      for (int i = 0; i < num_default_ints; i++)
-      {
-	//printf("selected = %d\n", selected);
-	//printf("num default ints %d, highest %d\n", num_default_ints, highest);
-	temp_row_lengths[selected] = num_default_ints;
-      	temptable[selected][i] = highest;
-      }
-      selected++;
-      printf("*****added even packing for largest numbers, %d x %dbits, %d rows\n", num_default_ints, highest, selected);
-    }
+    row += pack_largest(table, row);
 
-    // even packing for high exception
-    int num_high_ints = payload_bits / high_exception;
-    int largestpackable = payload_bits / num_high_ints;
-    if (num_high_ints != num_default_ints)
-    {
-      for (int i = 0; i < num_high_ints; i++)
-      {
-	//printf("selected = %d\n", selected);
-	//printf("num high ints %d, largest packable %d\n", num_high_ints, largestpackable);
-	temp_row_lengths[selected] = num_high_ints;
-	temptable[selected][i] = largestpackable;
-      }
-      selected++;
-      printf("+++++added even packing of high exception, %d x %dbits, %d rows\n", num_high_ints, largestpackable, selected);
-
-    }
-
-    // even packing for modal bitwidth
-    int num_mode_ints = payload_bits / mode;
-    largestpackable = payload_bits / num_mode_ints;
-    if (num_mode_ints != num_high_ints)
-    {
-      //printf("selected = %d\n", selected);
-      //printf("num mode ints %d, largest packable %d\n", num_mode_ints, largestpackable);
-
-      for (int i = 0; i < num_mode_ints; i++)
-      {
-	temp_row_lengths[selected] = num_mode_ints;
-	temptable[selected][i] = largestpackable;
-      }
-      selected++;
-      printf("=====added even packing of mode, %d x %dbits, %d rows\n", num_mode_ints, largestpackable, selected);
-    }
-    
-    /* Generate the most useful bitwidth combination. The (unweighted)
-       mean exception frequency of lists where mode+mode+highexp < 28
-       is 0.24, so I am using a combination of mode plus 25%
-       exceptions */
-    /// perhaps should move this to a separate function
-
-
-    // this is not necessarily the correct condition, but is a very
-    // very good approximation
-    if (mode < 7)
-    {
-    int *combination = new int[payload_bits];
-    
-    for (uint i = 0; i < payload_bits; i++)
-      combination[i] = 0;
-    
-    uint bits_available = payload_bits;
-    uint i = 0;
-    
-    while (bits_available >= high_exception)
-      {
-	combination[i++] = high_exception;
-	uint j = 0;
-	bits_available -= high_exception;
-	while (bits_available >= mode && j < 3)
-	  {
-	    combination[i++] = mode;
-	    j++;
-	    bits_available -= mode;
-	  }
-      }
-    if (bits_available >= mode)
-      combination[i] = mode;
-
-    /* Sort the combination, then make and count the permutations */
-    int comb_length = 0;
-    for (uint i = 0; i < payload_bits; i++)
-      {
-	if (combination[i] == 0)
-	  break;
-	comb_length++;
-      }
-    std::sort(combination, combination + comb_length);
-
-    /* add row lengths in advance for the permutations */
-    for (int i = 0; i < num_selectors - selected; i++)
-      temp_row_lengths[selected + i] = comb_length;
-    /* above will sometimes add lengths at the end that aren't
-     correct, but these will always be either overwritten or
-     ignored. I can't know how many permutations there will be until i
-     have counted them */
-    
-    /* Now make the permutations of that combination, copying to the
-       selector table until it is full or we run out of
-       permutations */
-    this->generate_perms(temptable, selected, combination, comb_length, add_perm_to_table);
-    delete [] combination;
-
-    /* We lost the correct value of "selected" while generating perms,
-       so find it again here */
-    // this does give correct answer in all cases, but think about if
-    // I can do this better - should there be a record of this number
-    // with the class somewhere??
-    selected = 16;
-    for (uint i = 0; i < num_selectors; i++)
-      if (temptable[i][0] == 0)
-	{
-	  selected = i;// + 1 ??
-	  break;
-	}
-    printf(".....added some permutations, %d rows\n", selected);
-    } // end permutations code
-    
-    /* If there is room left in selector table add in an even packing
-       of the low exception */
-    // checked and found to be correct, problem is not here
+  /****** 
+       Need empirical data on whether low exception row should come
+       before permutations
+  *******/
+ 
+  /* 
+    Add an even packing of the low exception
+  */
     if (selected < num_selectors)
-      {
-	//printf("selected = %d\n", selected);
-	int num_low_ints = payload_bits / lowest;
-	if (num_low_ints != num_mode_ints)
-	  {
-	    for (int i = 0; i < num_low_ints; i++)
-	      temptable[selected][i] = lowest;
-	    temp_row_lengths[selected] = num_low_ints;
-	    selected++;
-	    printf("-----added even packing of low exception, %d x %dbits, %d rows\n", num_low_ints, lowest, selected);
-	  }
-      }
-  }
+      row += add_low_exception(table, row);
+      
+   /*
+    Add permutations of mode and high exception
+   */
+  if (mode < (payload_bits / 4))
+    row += add_permutations(table, row);
 
-
-  // maybe the problem occurs below, try printing out matrix here
-
-  
-
-  /* now we have the 2d matrix version, convert it to a proper selector table*/
-  table->rows = selected;
-  table->row_lengths = new int[selected];
-  table->bitwidths = new int*[selected];
-
-  /* get length of longest row */
-  int maxlength = 0;
-  for (int i = 0; i < selected; i++)
-    if (temp_row_lengths[i] > maxlength)
-      maxlength = temp_row_lengths[i];
-
-  //printf("max ints per row: %d\n", maxlength);
-  //printf("number of selectors: %d\n\n", selected);
-
-
-  /* write out selectors and their lengths, longest to shortest */
-  int count = 0;
-  while (count < selected)
-    for (int i = maxlength; i >= 0; i--)
-      for (int j = 0; j < selected; j++)
-	if (temp_row_lengths[j] == i)
-	{
-	  table->row_lengths[count] = i;
-	  table->bitwidths[count] = new int[i];
-	  for (int k = 0; k < i; k++)
-	    table->bitwidths[count][k] = temptable[j][k];
-	  count++;
-	}
-  
-
-
-  
-  
-  //for (int i= 0; i < selected; i++)
-  //delete [] temptable[i];
-  //delete [] temptable;
-
-  delete [] temp_row_lengths;
-  
-  return;
+  printf("%d rows generated so far\n", row);
 }
 
 
 /* 
    Add a new permutation of bitwidths to the selector table
 */
-void SelectorGen::add_perm_to_table(int **table, uint row, int *permutation, int length)
+void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permutation, int length)
 {
+  table->bitwidths[row] = new int[length];
+  table->row_lengths[row] = length;
+  //printf("created a new selector row of length %d\n", length);
   for (int i = 0; i < length; i++)
-    table[row][i] = permutation[i];
+    {
+      //printf("%d ", permutation[i]);
+      
+      table->bitwidths[row][i] = permutation[i];
+      //table[row][i] = permutation[i];
+    }
+  table->rows++;
+
 }
 
 /* 
@@ -406,13 +383,18 @@ int SelectorGen::next_lex_perm(int *a, int n) {
    Generates permutations in correct order and outputs unique ones -
    taken directly from rosettacode
 */
-void SelectorGen::generate_perms(int **table, uint selected, int *x, int n, void callback(int**, uint, int *, int))
+void SelectorGen::generate_perms(selector_table *table, uint selected, int *x, int n, void callback(selector_table*, uint, int *, int))
 {
     do
     {
       if (callback)
-	callback(table, selected, x, n);
+	{
+	  callback(table, table->rows, x, n);
+	  //callback(table, selected, x, n);
+	}
       selected++;
     }
-    while (next_lex_perm(x, n) && selected < num_selectors);
+    while (next_lex_perm(x, n) && table->rows < num_selectors);
+    //while (next_lex_perm(x, n) && selected < num_selectors);
+
 }

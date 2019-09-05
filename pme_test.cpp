@@ -53,15 +53,21 @@ int main(int argc, char *argv[])
     //if (listnumber == 58)
     if (true)
     {
-      SelectorGen generator(selectorsize, encodedstats);
+      SelectorGen generator(selectorsize, listnumber, encodedstats);
       SelectorGen::selector_table *newtable = new SelectorGen::selector_table;
-      generator.generate(newtable);
+      newtable->row_lengths = new int[generator.get_num_selectors()];
+      newtable->bitwidths = new int*[generator.get_num_selectors()];
+      generator.smart_generate(newtable);
       
-      printf("list number: %d\n", listnumber);
-      printf("list length: %u\n", length);
+      //printf("list number: %d\n", listnumber);
+      //printf("list length: %u\n", length);
 
-      generator.print_stats();
+      //generator.print_stats();
       generator.print_table(*newtable);
+
+      delete [] newtable->row_lengths;
+      
+      
     }
       
     //delete newtable;
