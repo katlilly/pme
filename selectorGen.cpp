@@ -34,6 +34,63 @@ int SelectorGen::get_num_rows()
   return selected;
 }
 
+/*
+  Generate the selector table for the current list
+ */
+void SelectorGen::generate(selector_table *table)
+{
+  int row = 0;
+
+  /* 
+     Create selector table for lists where more than 90% of dgaps are 1
+  */
+  if (high_exception == 1)
+  {
+    row = all_ones(table);
+    return;
+  }
+  
+  /* 
+     Add the single-dgap, full-payload-size selector if needed
+  */
+  if (highest * 2 > payload_bits)
+    add_one_int_selector(table, row++);
+  
+  /* 
+     Add two dgap selectors for short lists (defined as lists where
+     you can't gain anything from using a combination of mode and high
+     exception)
+  */
+  if ((mode * 2 + high_exception) > payload_bits) 
+     row += add_two_dgap_selectors(table, row);
+  
+  /*
+     Catch those few cases that don't get a 2 int selector in above
+     for loop but could use one.
+  */
+  if (row < 1 && lowest * 2 < payload_bits && highest * 3 > payload_bits)
+    row += add_other_two_dgap_selector(table, row);
+
+  /* 
+     Add even packings for largest dgaps and for high exception and for
+     mode.
+   */
+  if (mode * 3 <= payload_bits)
+    row += add_even_packings(table, row);
+  
+  /*
+    Add permutations of mode and high exception.
+  */
+  if (mode < (payload_bits / 4))
+    row += add_permutations(table, row);
+
+  /* 
+    Add an even packing of the low exception if row(s) remaining.
+  */
+  if (row < num_selectors && lowest <= payload_bits / 3)
+    row += add_low_exception(table, row);
+}
+
 /* 
    Print the selector table
 */
@@ -51,9 +108,9 @@ void SelectorGen::print_table(selector_table table)
     printf(" = %d bits used\n", sum);
     
     if (sum > payload_bits)
-      exit(printf("************** exceedes payload size **************\n"));
+      exit(printf("exceedes payload size\n"));
     if (sum <= payload_bits - table.bitwidths[i][0])
-      exit(printf("**************** underful payload ************\n"));
+      exit(printf("underful payload\n"));
   }
   printf("\n================================\n\n");
 }
@@ -69,6 +126,8 @@ void SelectorGen::print_stats(void)
   printf("Highest: %d\n\n", highest);
  return;
 }
+
+
 
 /* 
    Generate selector table for the case where all or 90% of the dgaps
@@ -268,69 +327,27 @@ int SelectorGen::add_low_exception(selector_table *table, int row)
   return 1;
 }
 
-/*
-  Generate the selector table for the current list
- */
-void SelectorGen::generate(selector_table *table)
+/* 
+   Generates permutations in correct order and outputs unique ones to
+   my selector table. Taken from rosettacode
+*/
+void SelectorGen::generate_perms(selector_table *table, uint selected, int *x, int n,
+				 void callback(selector_table*, uint, int *, int))
 {
-  int row = 0;
-
-  /* 
-     Create selector table for lists where more than 90% of dgaps are 1
-  */
-  if (high_exception == 1)
+  do
   {
-    row = all_ones(table);
-    return;
+    if (callback)
+      callback(table, table->rows, x, n);
+    selected++;
   }
-  
-  /* 
-     Add the single-dgap, full-payload-size selector if needed
-  */
-  if (highest * 2 > payload_bits)
-    add_one_int_selector(table, row++);
-  
-  /* 
-     Add two dgap selectors for short lists (defined as lists where
-     you can't gain anything from using a combination of mode and high
-     exception)
-  */
-  if ((mode * 2 + high_exception) > payload_bits) 
-     row += add_two_dgap_selectors(table, row);
-  
-  /*
-     Catch those few cases that don't get a 2 int selector in above
-     for loop but could use one.
-  */
-  if (row < 1 && lowest * 2 < payload_bits && highest * 3 > payload_bits)
-    row += add_other_two_dgap_selector(table, row);
-
-  /* 
-     Add even packings for largest dgaps and for high exception and for
-     mode.
-   */
-  if (mode * 3 <= payload_bits)
-    row += add_even_packings(table, row);
-  
-  /*
-    Add permutations of mode and high exception.
-  */
-  if (mode < (payload_bits / 4))
-    row += add_permutations(table, row);
-
-  /* 
-    Add an even packing of the low exception if row(s) remaining.
-  */
-  if (row < num_selectors && lowest <= payload_bits / 3)
-    row += add_low_exception(table, row);
- 
+  while (next_lex_perm(x, n) && table->rows < num_selectors);
 }
-
 
 /* 
    Add a new permutation of bitwidths to the selector table
 */
-void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permutation, int length)
+void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permutation,
+				    int length)
 {
   table->bitwidths[row] = new int[length];
   table->row_lengths[row] = length;
@@ -340,49 +357,29 @@ void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permut
 }
 
 /* 
-   Get next lexicographical permutation. taken from rosettacode
+   Get the next lexicographical (in order) permutation. Taken from rosettacode
 */
 int SelectorGen::next_lex_perm(int *a, int n) {
 #define swap(i, j) {t = a[i]; a[i] = a[j]; a[j] = t;}
-    int k, l, t;
+  int k, l, t;
     
-    /* 1. Find the largest index k such that a[k] < a[k + 1]. If no such
+  /* Find the largest index k such that a[k] < a[k + 1]. If no such
      index exists, the permutation is the last permutation. */
-    for (k = n - 1; k && a[k - 1] >= a[k]; k--);
-    
-    if (!k--) return 0;
-    /* 2. Find the largest index l such that a[k] < a[l]. Since k + 1 is
+  for (k = n - 1; k && a[k - 1] >= a[k]; k--);
+  if (!k--)
+    return 0;
+  
+  /* Find the largest index l such that a[k] < a[l]. Since k + 1 is
      such an index, l is well defined */
-    for (l = n - 1; a[l] <= a[k]; l--) {
-        ;
-    }
-    
-    /* 3. Swap a[k] with a[l] */
+  for (l = n - 1; a[l] <= a[k]; l--)
+    ;
+  
+  /* Swap a[k] with a[l] */
+  swap(k, l);
+  
+  /* Reverse the sequence from a[k + 1] to the end */
+  for (k++, l = n - 1; l > k; l--, k++)
     swap(k, l);
-    
-    /* 4. Reverse the sequence from a[k + 1] to the end */
-    for (k++, l = n - 1; l > k; l--, k++)
-        swap(k, l);
-    return 1;
+  return 1;
 #undef swap
-}
-
-/* 
-   Generates permutations in correct order and outputs unique ones -
-   taken directly from rosettacode
-*/
-void SelectorGen::generate_perms(selector_table *table, uint selected, int *x, int n, void callback(selector_table*, uint, int *, int))
-{
-    do
-    {
-      if (callback)
-	{
-	  callback(table, table->rows, x, n);
-	  //callback(table, selected, x, n);
-	}
-      selected++;
-    }
-    while (next_lex_perm(x, n) && table->rows < num_selectors);
-    //while (next_lex_perm(x, n) && selected < num_selectors);
-
 }
