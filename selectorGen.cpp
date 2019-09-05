@@ -49,13 +49,13 @@ void SelectorGen::print_table(selector_table table)
       printf("%d ", table.bitwidths[i][j]);
     }
     printf(" = %d bits used\n", sum);
+    
     if (sum > payload_bits)
       exit(printf("************** exceedes payload size **************\n"));
     if (sum <= payload_bits - table.bitwidths[i][0])
       exit(printf("**************** underful payload ************\n"));
-	
   }
-  printf("\n=============================\n\n");
+  printf("\n================================\n\n");
 }
 
 /* 
@@ -71,8 +71,8 @@ void SelectorGen::print_stats(void)
 }
 
 /* 
-   Generate selector table for the rare case where all or 90% of
-   the dgaps are ones
+   Generate selector table for the case where all or 90% of the dgaps
+   are ones
 */
 int SelectorGen::all_ones(selector_table *table)
 {
@@ -96,7 +96,7 @@ int SelectorGen::all_ones(selector_table *table)
 
     if (highest > 1)
     {
-      // should also be including permutations of ones and highest
+      // probably should also be including permutations of ones and highest
       table->bitwidths[1] = new int[1];
       table->bitwidths[1][0] = payload_bits;
       table->row_lengths[1] = 1;
@@ -115,7 +115,9 @@ void SelectorGen::add_one_int_selector(selector_table *table, int row)
   table->rows = row + 1;
 }
 
-
+/*
+  Add all the usable two-dgap selectors
+ */
 int SelectorGen::add_two_dgap_selectors(selector_table *table, int row)
 {
   uint start = lowest;
@@ -254,6 +256,9 @@ int SelectorGen::add_other_two_dgap_selector(selector_table *table, int row)
 int SelectorGen::add_low_exception(selector_table *table, int row)
 {
   int num_low_ints = payload_bits / lowest;
+  int num_mode_ints = payload_bits / mode;
+  if (num_low_ints == num_mode_ints)
+    return 0;
   table->row_lengths[row] = num_low_ints;
   table->bitwidths[row] = new int[num_low_ints];
   for (int i = 0; i < num_low_ints; i++)
@@ -284,7 +289,7 @@ void SelectorGen::generate(selector_table *table)
   */
   if (highest * 2 > payload_bits)
     add_one_int_selector(table, row++);
-
+  
   /* 
      Add two dgap selectors for short lists (defined as lists where
      you can't gain anything from using a combination of mode and high
@@ -292,7 +297,7 @@ void SelectorGen::generate(selector_table *table)
   */
   if ((mode * 2 + high_exception) > payload_bits) 
      row += add_two_dgap_selectors(table, row);
-
+  
   /*
      Catch those few cases that don't get a 2 int selector in above
      for loop but could use one.
@@ -306,7 +311,7 @@ void SelectorGen::generate(selector_table *table)
    */
   if (mode * 3 <= payload_bits)
     row += add_even_packings(table, row);
-   
+  
   /*
     Add permutations of mode and high exception.
   */
@@ -316,9 +321,11 @@ void SelectorGen::generate(selector_table *table)
   /* 
     Add an even packing of the low exception if row(s) remaining.
   */
-  if (row < num_selectors)
+  // also worth checking if this is not a duplicate of mode, as least
+  // in terms of number of ints packed
+  if (row < num_selectors && lowest <= payload_bits / 3)
     row += add_low_exception(table, row);
-  
+ 
 }
 
 
