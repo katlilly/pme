@@ -1,0 +1,130 @@
+Lowest: 6
+Mode: 7
+High exception: 8
+Highest: 10
+
+ 2 int packing: 14 14  = 28 bits used
+ 3 int packing: 9 9 9  = 27 bits used
+ 4 int packing: 7 7 7 7  = 28 bits used
+
+================================
+
+Lowest: 3
+Mode: 4
+High exception: 6
+Highest: 7
+
+ 4 int packing: 7 7 7 7  = 28 bits used
+ 7 int packing: 4 4 4 4 4 4 4  = 28 bits used
+ 6 int packing: 4 4 4 4 6 6  = 28 bits used
+ 6 int packing: 4 4 4 6 4 6  = 28 bits used
+ 6 int packing: 4 4 4 6 6 4  = 28 bits used
+ 6 int packing: 4 4 6 4 4 6  = 28 bits used
+ 6 int packing: 4 4 6 4 6 4  = 28 bits used
+ 6 int packing: 4 4 6 6 4 4  = 28 bits used
+ 6 int packing: 4 6 4 4 4 6  = 28 bits used
+ 6 int packing: 4 6 4 4 6 4  = 28 bits used
+ 6 int packing: 4 6 4 6 4 4  = 28 bits used
+ 6 int packing: 4 6 6 4 4 4  = 28 bits used
+ 6 int packing: 6 4 4 4 4 6  = 28 bits used
+ 6 int packing: 6 4 4 4 6 4  = 28 bits used
+ 6 int packing: 6 4 4 6 4 4  = 28 bits used
+ 6 int packing: 6 4 6 4 4 4  = 28 bits used
+
+================================
+
+Lowest: 7
+Mode: 12
+High exception: 16
+Highest: 16
+
+ 1 int packing: 28  = 28 bits used
+ 2 int packing: 12 16  = 28 bits used
+ 2 int packing: 13 15  = 28 bits used
+ 2 int packing: 14 14  = 28 bits used
+ 2 int packing: 15 13  = 28 bits used
+ 2 int packing: 16 12  = 28 bits used
+ 4 int packing: 7 7 7 7  = 28 bits used
+
+================================
+
+Lowest: 2
+Mode: 3
+High exception: 5
+Highest: 7
+
+ 4 int packing: 7 7 7 7  = 28 bits used
+ 5 int packing: 5 5 5 5 5  = 25 bits used
+ 9 int packing: 3 3 3 3 3 3 3 3 3  = 27 bits used
+ 8 int packing: 3 3 3 3 3 3 5 5  = 28 bits used
+ 8 int packing: 3 3 3 3 3 5 3 5  = 28 bits used
+ 8 int packing: 3 3 3 3 3 5 5 3  = 28 bits used
+ 8 int packing: 3 3 3 3 5 3 3 5  = 28 bits used
+ 8 int packing: 3 3 3 3 5 3 5 3  = 28 bits used
+ 8 int packing: 3 3 3 3 5 5 3 3  = 28 bits used
+ 8 int packing: 3 3 3 5 3 3 3 5  = 28 bits used
+ 8 int packing: 3 3 3 5 3 3 5 3  = 28 bits used
+ 8 int packing: 3 3 3 5 3 5 3 3  = 28 bits used
+ 8 int packing: 3 3 3 5 5 3 3 3  = 28 bits used
+ 8 int packing: 3 3 5 3 3 3 3 5  = 28 bits used
+ 8 int packing: 3 3 5 3 3 3 5 3  = 28 bits used
+ 8 int packing: 3 3 5 3 3 5 3 3  = 28 bits used
+
+================================
+
+Lowest: 5
+Mode: 6
+High exception: 8
+Highest: 10
+
+ 2 int packing: 14 14  = 28 bits used
+ 3 int packing: 9 9 9  = 27 bits used
+ 4 int packing: 7 7 7 7  = 28 bits used
+ 4 int packing: 6 6 6 8  = 26 bits used
+ 4 int packing: 6 6 8 6  = 26 bits used
+ 4 int packing: 6 8 6 6  = 26 bits used
+ 4 int packing: 8 6 6 6  = 26 bits used
+ 5 int packing: 5 5 5 5 5  = 25 bits used
+
+================================
+
+Lowest: 1
+Mode: 1
+High exception: 1
+Highest: 1
+
+28 int packing: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1  = 28 bits used
+
+================================
+
+Lowest: 1
+Mode: 1
+High exception: 1
+Highest: 17
+
+28 int packing: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1  = 28 bits used
+ 1 int packing: 28  = 28 bits used
+
+================================
+
+Lowest: 18
+Mode: 18
+High exception: 18
+Highest: 18
+
+ 1 int packing: 28  = 28 bits used
+
+================================
+
+Lowest: 12
+Mode: 13
+High exception: 14
+Highest: 15
+
+ 1 int packing: 28  = 28 bits used
+ 2 int packing: 13 15  = 28 bits used
+ 2 int packing: 14 14  = 28 bits used
+ 2 int packing: 15 13  = 28 bits used
+
+================================
+
