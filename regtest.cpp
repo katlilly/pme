@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
       exit(printf("something went wrong while reading in test input data\n"));
 
     listnumber++;
-
+    
     /*
       Check one known input value
     */
