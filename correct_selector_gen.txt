@@ -1,5 +1,3 @@
-list number: 63
-list length: 2333
 Lowest: 6
 Mode: 7
 High exception: 8
@@ -11,8 +9,6 @@ Highest: 10
 
 ================================
 
-list number: 66
-list length: 15996
 Lowest: 3
 Mode: 4
 High exception: 6
@@ -37,8 +33,6 @@ Highest: 7
 
 ================================
 
-list number: 83
-list length: 15
 Lowest: 7
 Mode: 12
 High exception: 16
@@ -54,8 +48,6 @@ Highest: 16
 
 ================================
 
-list number: 95
-list length: 25722
 Lowest: 2
 Mode: 3
 High exception: 5
@@ -80,8 +72,6 @@ Highest: 7
 
 ================================
 
-list number: 152
-list length: 2796
 Lowest: 5
 Mode: 6
 High exception: 8
@@ -98,8 +88,6 @@ Highest: 10
 
 ================================
 
-list number: 143417
-list length: 181
 Lowest: 1
 Mode: 1
 High exception: 1
@@ -109,8 +97,6 @@ Highest: 1
 
 ================================
 
-list number: 454788
-list length: 213
 Lowest: 1
 Mode: 1
 High exception: 1
@@ -121,8 +107,6 @@ Highest: 17
 
 ================================
 
-list number: 499690
-list length: 1
 Lowest: 18
 Mode: 18
 High exception: 18
@@ -132,8 +116,6 @@ Highest: 18
 
 ================================
 
-list number: 499691
-list length: 30
 Lowest: 12
 Mode: 13
 High exception: 14

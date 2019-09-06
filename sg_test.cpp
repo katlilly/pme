@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
       table->bitwidths = new int*[size];
       generator.generate(table);
       
-      printf("list number: %d\n", listnumber);
-      printf("list length: %u\n", length);
+      //printf("list number: %d\n", listnumber);
+      //printf("list length: %u\n", length);
 
       generator.print_stats();
       generator.print_table(*table);

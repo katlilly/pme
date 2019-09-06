@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
   int *postings_list = new int[NUMDOCS];
   uint32_t length, listnumber = 0;
   FILE *output = fopen("testdata.bin", "w");
+  FILE *output2 = fopen("sg_testdata.bin", "w");
 
   /*
     Read in postings list and write out the first 70 to a file to use
@@ -34,12 +35,25 @@ int main(int argc, char *argv[])
     listnumber++;
 
     /* The first 70 lists contain some long lists, list 766 contains
-       doc zero */
+       doc zero. this is to make testdataset for testing statistics
+       calculation */
     if (listnumber < 71 || listnumber == 766)
     {
       fwrite(&length, sizeof(int), 1, output);
       fwrite(postings_list, sizeof(int), length, output);
     }
+
+    /* 
+       This is to create test data for testing selector table generation
+     */
+    if (listnumber == 64 || listnumber == 67 || listnumber == 84 ||
+	listnumber == 96 || listnumber == 153 || listnumber == 143418 ||
+	listnumber == 454789 || listnumber == 499691 || listnumber == 499692)
+    {
+      fwrite(&length, sizeof(int), 1, output2);
+      fwrite(postings_list, sizeof(int), length, output2);
+    }
+
   }
 
   delete [] postings_list;
