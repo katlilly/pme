@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     {
       SelectorGen generator(selectorsize, listnumber, encodedstats);
       SelectorGen::selector_table *table = new SelectorGen::selector_table;
+      table->rows = 0;
       int size = generator.get_num_selectors();
       table->row_lengths = new int[size];
       table->bitwidths = new int*[size];
@@ -63,15 +64,16 @@ int main(int argc, char *argv[])
       //printf("list length: %u\n", length);
 
       generator.print_stats();
-      generator.print_table(*table);
+      //generator.print_table(*table);
 
       delete [] table->row_lengths;
       //for (int i = 0; i < size; i++)
       //if (newtable->bitwidths[i])
       //    delete [] newtable->bitwidths[i];
-      //delete [] newtable->bitwidths;
-      
+      delete [] table->bitwidths;
+      delete table;
     }
+    
       
     //delete newtable;
     listnumber++;
