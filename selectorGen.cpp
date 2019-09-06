@@ -82,13 +82,18 @@ void SelectorGen::generate(selector_table *table)
     Add permutations of mode and high exception.
   */
   if (mode < (payload_bits / 4))
-    row += add_permutations(table, row);
+    row = add_permutations(table, row);
 
   /* 
     Add an even packing of the low exception if row(s) remaining.
   */
   if (row < num_selectors && lowest <= payload_bits / 3)
     row += add_low_exception(table, row);
+  else
+    {
+      printf("not adding even packing for low exception\n");
+      printf("row: %d, num_selectors %d, lowest %d, payloadbits/3 %d\n", row, num_selectors, lowest, payload_bits / 3);
+    }
 }
 
 /* 
@@ -292,7 +297,7 @@ int SelectorGen::add_permutations(selector_table *table, int row)
   this->generate_perms(table, table->rows, combination, i, add_perm_to_table);
 
   delete [] combination;
-  return num_selectors - row;
+  return table->rows;
 }
 
 /*

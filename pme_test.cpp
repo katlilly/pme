@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
      */
     int selectorsize = 4;
     
-    if (listnumber == 64)
+    //if (listnumber == 65)
     if (true)
     {
       SelectorGen generator(selectorsize, listnumber, encodedstats);
