@@ -89,11 +89,7 @@ void SelectorGen::generate(selector_table *table)
   */
   if (row < num_selectors && lowest <= payload_bits / 3)
     row += add_low_exception(table, row);
-  else
-    {
-      printf("not adding even packing for low exception\n");
-      printf("row: %d, num_selectors %d, lowest %d, payloadbits/3 %d\n", row, num_selectors, lowest, payload_bits / 3);
-    }
+  
 }
 
 /* 
