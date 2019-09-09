@@ -67,12 +67,11 @@ int main(int argc, char *argv[])
       //printf("list number: %d\n", listnumber);
       //printf("list length: %u\n", length);
 
-      //generator.print_stats();
-      //generator.print_table(*table);
+      generator.print_stats();
+      generator.print_table(*table);
 
       delete [] table->row_lengths;
       for (int i = 0; i < size; i++)
-	//if (table->bitwidths[i])
 	delete [] table->bitwidths[i];
       delete [] table->bitwidths;
       delete table;
