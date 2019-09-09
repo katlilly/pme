@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
        Generate a selector table for current list based on its statistics
      */
     int selectorsize = 4;
+    if (selectorsize < 2 || selectorsize > 16)
+      exit(printf("not a reasonable selector size\n"));
     
     
     if (true)
@@ -58,18 +60,20 @@ int main(int argc, char *argv[])
       int size = generator.get_num_selectors();
       table->row_lengths = new int[size];
       table->bitwidths = new int*[size];
+      for (int i = 0; i < size; i++)
+	table->bitwidths[i] = new int[generator.get_payload_bits()];
       generator.generate(table);
       
       //printf("list number: %d\n", listnumber);
       //printf("list length: %u\n", length);
 
-      generator.print_stats();
+      //generator.print_stats();
       //generator.print_table(*table);
 
       delete [] table->row_lengths;
-      //for (int i = 0; i < size; i++)
-      //if (newtable->bitwidths[i])
-      //    delete [] newtable->bitwidths[i];
+      for (int i = 0; i < size; i++)
+	//if (table->bitwidths[i])
+	delete [] table->bitwidths[i];
       delete [] table->bitwidths;
       delete table;
     }

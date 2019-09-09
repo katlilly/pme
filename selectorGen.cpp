@@ -35,6 +35,14 @@ int SelectorGen::get_num_rows()
 }
 
 /*
+   Return the size of the payload in bits
+ */
+int SelectorGen::get_payload_bits()
+{
+  return payload_bits;
+}
+
+/*
   Generate the selector table for the current list
  */
 void SelectorGen::generate(selector_table *table)
@@ -147,17 +155,17 @@ int SelectorGen::all_ones(selector_table *table)
       selected = 2;
     }
 
-    table->row_lengths = new int[table->rows];
+  //table->row_lengths = new int[table->rows];
     table->row_lengths[0] = payload_bits;
-    table->bitwidths = new int*[table->rows];
-    table->bitwidths[0] = new int[payload_bits];
+    //table->bitwidths = new int*[table->rows];
+    //table->bitwidths[0] = new int[payload_bits];
     for (int i = 0; i < payload_bits; i++)
       table->bitwidths[0][i] = 1;
 
     if (highest > 1)
     {
       // probably should also be including permutations of ones and highest
-      table->bitwidths[1] = new int[1];
+      //table->bitwidths[1] = new int[1];
       table->bitwidths[1][0] = payload_bits;
       table->row_lengths[1] = 1;
     }
@@ -170,7 +178,7 @@ int SelectorGen::all_ones(selector_table *table)
 void SelectorGen::add_one_int_selector(selector_table *table, int row)
 {
   table->row_lengths[row] = 1;
-  table->bitwidths[row] = new int[1];
+  //table->bitwidths[row] = new int[1];
   table->bitwidths[row][0] = payload_bits;
   table->rows = row + 1;
 }
@@ -189,7 +197,7 @@ int SelectorGen::add_two_dgap_selectors(selector_table *table, int row)
     if (row < get_num_selectors())
       {
 	table->row_lengths[row] = 2;
-	table->bitwidths[row] = new int[2];
+	//table->bitwidths[row] = new int[2];
 	table->bitwidths[row][0] = i;
 	table->bitwidths[row++][1] = payload_bits - i;
 	table->rows++;
@@ -211,7 +219,7 @@ int SelectorGen::add_even_packings(selector_table *table, int row)
   if (row < 1) // this checks if largest dgaps have already been accomodated
   {
     table->row_lengths[row] = num_default_ints;
-    table->bitwidths[row] = new int[num_default_ints];
+    //table->bitwidths[row] = new int[num_default_ints];
     for (int i = 0; i < num_default_ints; i++)
       table->bitwidths[row][i] = highest;
     table->rows++;
@@ -225,7 +233,7 @@ int SelectorGen::add_even_packings(selector_table *table, int row)
   if (num_high_ints != num_default_ints)
   {
     table->row_lengths[row] = num_high_ints;
-    table->bitwidths[row] = new int[num_high_ints];
+    //table->bitwidths[row] = new int[num_high_ints];
     for (int i = 0; i < num_high_ints; i++)
       table->bitwidths[row][i] = largestpackable_hxp;
     table->rows++;
@@ -239,7 +247,7 @@ int SelectorGen::add_even_packings(selector_table *table, int row)
   if (num_mode_ints != num_high_ints)
   {
     table->row_lengths[row] = num_mode_ints;
-    table->bitwidths[row] = new int[num_mode_ints];
+    //table->bitwidths[row] = new int[num_mode_ints];
     for (int i = 0; i < num_mode_ints; i++)
       table->bitwidths[row][i] = largestpackable_md;
     table->rows++;
@@ -302,7 +310,7 @@ int SelectorGen::add_permutations(selector_table *table, int row)
 int SelectorGen::add_other_two_dgap_selector(selector_table *table, int row)
 {
   table->row_lengths[row] = 2;
-  table->bitwidths[row] = new int[2];
+  //table->bitwidths[row] = new int[2];
   table->bitwidths[row][0] = payload_bits / 2;
   table->bitwidths[row][1] = payload_bits - table->bitwidths[row][0];
   table->rows++;
@@ -320,7 +328,7 @@ int SelectorGen::add_low_exception(selector_table *table, int row)
   if (num_low_ints == num_mode_ints)
     return 0;
   table->row_lengths[row] = num_low_ints;
-  table->bitwidths[row] = new int[num_low_ints];
+  //table->bitwidths[row] = new int[num_low_ints];
   for (int i = 0; i < num_low_ints; i++)
     table->bitwidths[row][i] = lowest;
     
@@ -350,7 +358,7 @@ void SelectorGen::generate_perms(selector_table *table, uint selected, int *x, i
 void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permutation,
 				    int length)
 {
-  table->bitwidths[row] = new int[length];
+  //table->bitwidths[row] = new int[length];
   table->row_lengths[row] = length;
   for (int i = 0; i < length; i++)
       table->bitwidths[row][i] = permutation[i];

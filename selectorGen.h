@@ -3,7 +3,6 @@
 class SelectorGen
 {
  public:
-  int selector_bits;
   int listnumber;
   uint lowest;
   uint mode;
@@ -17,6 +16,7 @@ class SelectorGen
   };
  
  private:
+  int selector_bits;
   uint num_selectors;
   uint payload_bits;
   uint selected;
@@ -74,6 +74,11 @@ class SelectorGen
     selector size vs compressed data size experiments.
   */
   int get_num_rows();
+  
+  /*
+    Return the size of the payload in bits
+  */
+  int get_payload_bits();
 
   /*
     Print the selector table to screen. for error checking.
