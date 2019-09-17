@@ -1,10 +1,10 @@
 
 CC = gcc
-CFLAGS = -ansi -pedantic -W -Wall -g
-
+#CFLAGS = -ansi -pedantic -W -Wall -g
+CFLAGS = -W
 
 pme: pme.c
-	$(CC) $(CFLAGS) -o pme pme.c
+	$(CC) $(CFLAGS) -o pme pme.c -lm
 
 runpme: pme _build/Debug/postings.bin
 	./pme _build/Debug/postings.bin

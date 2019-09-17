@@ -16,4 +16,9 @@ covtest
 *.gcno
 *.gcda
 test_stats.txt
-
+testdata/test_sg.txt
+testdata/test_stats.txt
+testdata/*.bin
+test_pme
+test_sg
+temp
