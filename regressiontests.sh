@@ -12,4 +12,4 @@ g++ -g -std=c++11 listStats.cpp selectorGen.cpp sg_test.cpp -o test_sg
 ./test_sg testdata/sg_testdata.bin > testdata/test_sg.txt
 diff testdata/test_sg.txt testdata/correct_selector_gen.txt
 
-valgrind ./test_sg > /dev/null testdata/sg_testdata.bin
+#valgrind ./test_sg > /dev/null testdata/sg_testdata.bin
