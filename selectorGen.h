@@ -10,7 +10,7 @@ class SelectorGen
   uint highest;
 
   struct selector_table {
-    int rows;
+    uint rows;
     int *row_lengths;
     int **bitwidths;
   };

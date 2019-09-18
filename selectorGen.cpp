@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <algorithm>
 #include "selectorGen.h"
 
@@ -47,7 +46,7 @@ int SelectorGen::get_payload_bits()
  */
 void SelectorGen::generate(selector_table *table)
 {
-  int row = 0;
+  uint row = 0;
 
   /* 
      Create selector table for lists where more than 90% of dgaps are 1
@@ -105,9 +104,9 @@ void SelectorGen::generate(selector_table *table)
 */
 void SelectorGen::print_table(selector_table table)
 {
-  for (int i = 0; i < table.rows; i++)
+  for (uint i = 0; i < table.rows; i++)
   {
-    int sum = 0;
+    uint sum = 0;
     printf("%2d int packing: ", table.row_lengths[i]);
     for (int j = 0; j < table.row_lengths[i]; j++)
     {
@@ -155,7 +154,7 @@ int SelectorGen::all_ones(selector_table *table)
 
     table->row_lengths[0] = payload_bits;
 
-    for (int i = 0; i < payload_bits; i++)
+    for (uint i = 0; i < payload_bits; i++)
       table->bitwidths[0][i] = 1;
 
     if (highest > 1)
@@ -354,7 +353,7 @@ void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permut
 }
 
 /* 
-   Get the next lexicographical (in order) permutation. Taken from rosettacode
+   Get the next in order permutation. Taken from rosettacode
 */
 int SelectorGen::next_lex_perm(int *a, int n) {
 #define swap(i, j) {t = a[i]; a[i] = a[j]; a[j] = t;}

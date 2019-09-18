@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <stdint.h>
 #include "listStats.h"
-#include "fls.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -49,20 +48,29 @@ int main(int argc, char *argv[])
     /*
       Check two different bitwidth calculations against each other
     */
-    for (int i = 0; i < length; i++)
+    for (uint i = 0; i < length; i++)
       if (bitwidths[i] != bitwidths2[i])
 	exit(printf("list %u, bitwidth calculation error\n", listnumber));
     
     /*
       Calculate mean bitwidth and stddev for each list, output will be
-      piped to a file to compare with known correct results
+      directed to a file to compare with known correct results
     */
     ls.calculate_stats(bitwidths, length);
     printf("\nlength: %u, mean: %.2f, stdev: %.2f\n", length, ls.mean, ls.stdev);
-    printf("mode: %d, 95th: %d, next-most-common-low: %d, range: %d\n", ls.mode, ls.highexcp, ls.lowexcp, ls.range);
-    printf("highest: %d, lowest: %d, totalrange: %d\n", ls.highest, ls.lowest, ls.totalrange);
-    printf("Modal fraction: %.2f, Low fraction: %.2f, High fraction: %.2f\n", ls.modFrac, ls.lowFrac, ls.highFrac);
+    printf("mode: %d, 95th: %d, next-most-common-low: %d, range: %d\n",
+		 ls.mode, ls.highexcp, ls.lowexcp, ls.range);
+    printf("highest: %d, lowest: %d, totalrange: %d\n", ls.highest, ls.lowest,
+		 ls.totalrange);
+    printf("Modal fraction: %.2f, Low fraction: %.2f, High fraction: %.2f\n",
+		 ls.modFrac, ls.lowFrac, ls.highFrac);
   }
-    
+
+  delete [] postings_list;
+  delete [] dgaps;
+  delete [] bitwidths;
+  delete [] bitwidths2;
+  fclose(fp);
+  
   return 0;
 }
