@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <stdint.h>
-#include "listStats.h"
+#include "../listStats.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[])
 {
-  const char *filename = "testdata.bin";
+  const char *filename = "testdata/testdata.bin";
   FILE *fp;
   if (NULL == (fp = fopen(filename, "rb")))
     exit(printf("Cannot open %s\n", filename));

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <stdint.h>
-#include "listStats.h"
-#include "selectorGen.h"
+#include "../listStats.h"
+#include "../selectorGen.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692

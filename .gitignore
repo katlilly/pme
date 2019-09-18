@@ -24,3 +24,5 @@ test_pme
 test_sg
 test_stats
 temp
+oldcode/
+*#
