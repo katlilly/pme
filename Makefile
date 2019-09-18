@@ -1,16 +1,22 @@
+all : test_stats test_sg
 
-CC = gcc
-#CFLAGS = -ansi -pedantic -W -Wall -g
-CFLAGS = -W
+test_stats : listStats.cpp stats_test.cpp
+	g++ -O3 -Wall -std=c++11 listStats.cpp stats_test.cpp -o test_stats
 
-pme: pme.c
-	$(CC) $(CFLAGS) -o pme pme.c -lm
-
-runpme: pme _build/Debug/postings.bin
-	./pme _build/Debug/postings.bin
+test_sg : listStats.cpp selectorGen.cpp sg_test.cpp
+	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp sg_test.cpp -o test_sg
 
 clean:
-	rm -f pme
+	- rm -f *.gcno *.gcda *.gcov test_pme test_stats test_sg testdata/test_sg.txt testdata/test_sg.txt
+
+
+
+#pme: pme.c
+#	$(CC) $(CFLAGS) -o pme pme.c -lm
+
+#runpme: pme _build/Debug/postings.bin
+#	./pme _build/Debug/postings.bin
+
 
 
 
