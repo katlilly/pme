@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 			Read one postings list (and make sure we did so successfully) 
 		*/
 		if (fread(postings_list, sizeof(*postings_list), length, fp) != length)
-			exit(printf("i/o error\n"));
+			exit(printf("error reading in postings list, listnumber: %d\n", listnumber));
 
 		/*
 		  Calculate bitwidth statistics for current list
@@ -47,10 +47,7 @@ int main(int argc, char *argv[])
 			Generate a selector table for current list based on its statistics
 		*/
 		int selectorsize = 4;
-		if (selectorsize < 2 || selectorsize > 16)
-			exit(printf("not a reasonable selector size\n"));
-
-		//if (listnumber == 47)
+		
 		if (true)
 			{
 			SelectorGen generator(selectorsize, listnumber, encodedstats);
