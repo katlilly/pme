@@ -16,7 +16,7 @@ class SelectorGen
 		};
  
 	private:
-	int selector_bits;
+	uint selector_bits;
 	uint num_selectors;
 	uint payload_bits;
 	uint selected;
@@ -35,7 +35,7 @@ class SelectorGen
       listnumber = list_num;
       payload_bits = 32 - selector_bits;
       num_selectors = 1;
-      for (int i = 0; i < selector_bits; i++)
+      for (uint i = 0; i < selector_bits; i++)
 			num_selectors *= 2;
 
       uint code = encoded_stats;
@@ -100,7 +100,7 @@ class SelectorGen
 	void add_one_int_selector(selector_table *table, int row);
 	int add_two_dgap_selectors(selector_table *table, int row);
 	int add_other_two_dgap_selector(selector_table *table, int row);
-	int add_even_packings(selector_table *table, int row);
+	int add_even_packings(selector_table *table, uint row);
 	int add_permutations(selector_table *table, int row);
 	int add_low_exception(selector_table *table, int row);
 
