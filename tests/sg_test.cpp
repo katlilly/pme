@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 		/* 
 			Generate a selector table for current list based on its statistics
 		*/
-		int selectorsize = 4;
+		int selectorsize = 2;
 		
 		if (true)
 			{

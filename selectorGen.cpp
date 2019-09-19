@@ -218,6 +218,9 @@ int SelectorGen::add_even_packings(selector_table *table, int row)
     row++;
   }
 
+  if (row >= num_selectors)
+	  return count;
+
   // even packing for high exception
   int num_high_ints = payload_bits / high_exception;
   int largestpackable_hxp = payload_bits / num_high_ints;
@@ -230,6 +233,9 @@ int SelectorGen::add_even_packings(selector_table *table, int row)
     count++;
     row++;
   }
+
+  if (row >= num_selectors)
+	  return count;
 
   // even packing for modal bitwidth
   int num_mode_ints = payload_bits / mode;
