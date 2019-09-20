@@ -99,25 +99,43 @@ void SelectorGen::generate(selector_table *table)
   
 	}
 
+/*
+   Sort the table by row length, from longest to shortest. This is
+   necessary before doing the compression.
+ */
+void SelectorGen::sort_table(selector_table table)
+	{
+	printf("number of rows = %d\n", table.num_rows);
+	int longest = 0;
+	for (uint row = 0; row < table.num_rows; row++)
+		if (table.rows[row].length > longest)
+			longest = table.rows[row].length;
+	printf("length of longest row = %d\n\n", longest);
+
+	
+
+	
+	}
+
 /* 
    Print the selector table
 */
 void SelectorGen::print_table(selector_table table)
 	{
-	for (uint i = 0; i < table.rows; i++)
+	for (uint i = 0; i < table.num_rows; i++)
 		{
 		uint sum = 0;
-		printf("%2d int packing: ", table.row_lengths[i]);
-		for (int j = 0; j < table.row_lengths[i]; j++)
+		printf("%2d int packing: ", table.rows[i].length);
+		for (int j = 0; j < table.rows[i].length; j++)
 			{
-			sum += table.bitwidths[i][j];
-			printf("%d ", table.bitwidths[i][j]);
+			sum += table.rows[i].bitwidths[j];
+			printf("%d ", table.rows[i].bitwidths[j]);
 			}
 		printf(" = %d bits used\n", sum);
     
 		if (sum > payload_bits)
 			exit(printf("exceedes payload size\n"));
-		if (sum <= payload_bits - table.bitwidths[i][0])
+		if (sum <= payload_bits - table.rows[i].bitwidths[0])
 			exit(printf("underful payload\n"));
 		}
 	printf("\n================================\n\n");
@@ -143,27 +161,27 @@ int SelectorGen::all_ones(selector_table *table)
 	{
 	if (highest == 1)
 		{
-      table->rows = 1;
+      table->num_rows = 1;
       selected = 1;
 		}
 	else
 		{
-      table->rows = 2;
+      table->num_rows = 2;
       selected = 2;
 		}
 
-	table->row_lengths[0] = payload_bits;
+	table->rows[0].length = payload_bits;
 
 	for (uint i = 0; i < payload_bits; i++)
-      table->bitwidths[0][i] = 1;
+      table->rows[0].bitwidths[i] = 1;
 
 	if (highest > 1)
 		{
       // probably should also be including permutations of ones and highest
-      table->bitwidths[1][0] = payload_bits;
-      table->row_lengths[1] = 1;
+      table->rows[1].bitwidths[0] = payload_bits;
+      table->rows[1].length = 1;
 		}
-	return table->rows;
+	return table->num_rows;
 	}
 
 /*
@@ -171,9 +189,9 @@ int SelectorGen::all_ones(selector_table *table)
 */
 void SelectorGen::add_one_int_selector(selector_table *table, int row)
 	{
-	table->row_lengths[row] = 1;
-	table->bitwidths[row][0] = payload_bits;
-	table->rows = row + 1;
+	table->rows[row].length = 1;
+	table->rows[row].bitwidths[0] = payload_bits;
+	table->num_rows = row + 1;
 	}
 
 /*
@@ -189,10 +207,10 @@ int SelectorGen::add_two_dgap_selectors(selector_table *table, int row)
 	for (uint i = start; i <= payload_bits - start; i++)
 		if (row < get_num_selectors())
 			{
-			table->row_lengths[row] = 2;
-			table->bitwidths[row][0] = i;
-			table->bitwidths[row++][1] = payload_bits - i;
-			table->rows++;
+			table->rows[row].length = 2;
+			table->rows[row].bitwidths[0] = i;
+			table->rows[row++].bitwidths[1] = payload_bits - i;
+			table->num_rows++;
 			count++;
 			}
 
@@ -210,10 +228,10 @@ int SelectorGen::add_even_packings(selector_table *table, uint row)
 	int num_default_ints = payload_bits / highest;
 	if (row < 1) // this checks if largest dgaps have already been accomodated
 		{
-		table->row_lengths[row] = num_default_ints;
+		table->rows[row].length = num_default_ints;
 		for (int i = 0; i < num_default_ints; i++)
-			table->bitwidths[row][i] = highest;
-		table->rows++;
+			table->rows[row].bitwidths[i] = highest;
+		table->num_rows++;
 		count++;
 		row++;
 		}
@@ -226,10 +244,10 @@ int SelectorGen::add_even_packings(selector_table *table, uint row)
 	int largestpackable_hxp = payload_bits / num_high_ints;
 	if (num_high_ints != num_default_ints)
 		{
-		table->row_lengths[row] = num_high_ints;
+		table->rows[row].length = num_high_ints;
 		for (int i = 0; i < num_high_ints; i++)
-			table->bitwidths[row][i] = largestpackable_hxp;
-		table->rows++;
+			table->rows[row].bitwidths[i] = largestpackable_hxp;
+		table->num_rows++;
 		count++;
 		row++;
 		}
@@ -242,10 +260,10 @@ int SelectorGen::add_even_packings(selector_table *table, uint row)
 	int largestpackable_md = payload_bits / num_mode_ints;
 	if (num_mode_ints != num_high_ints)
 		{
-		table->row_lengths[row] = num_mode_ints;
+		table->rows[row].length = num_mode_ints;
 		for (int i = 0; i < num_mode_ints; i++)
-			table->bitwidths[row][i] = largestpackable_md;
-		table->rows++;
+			table->rows[row].bitwidths[i] = largestpackable_md;
+		table->num_rows++;
 		count++;
 		}
 
@@ -293,10 +311,10 @@ int SelectorGen::add_permutations(selector_table *table, int row)
 		selector table until it is full or we run out of permutations
 	*/
 	std::sort(combination, combination + i);
-	this->generate_perms(table, table->rows, combination, i, add_perm_to_table);
+	this->generate_perms(table, table->num_rows, combination, i, add_perm_to_table);
 
 	delete [] combination;
-	return table->rows;
+	return table->num_rows;
 	}
 
 /*
@@ -304,10 +322,10 @@ int SelectorGen::add_permutations(selector_table *table, int row)
 */
 int SelectorGen::add_other_two_dgap_selector(selector_table *table, int row)
 	{
-	table->row_lengths[row] = 2;
-	table->bitwidths[row][0] = payload_bits / 2;
-	table->bitwidths[row][1] = payload_bits - table->bitwidths[row][0];
-	table->rows++;
+	table->rows[row].length = 2;
+	table->rows[row].bitwidths[0] = payload_bits / 2;
+	table->rows[row].bitwidths[1] = payload_bits - table->rows[row].bitwidths[0];
+	table->num_rows++;
 
 	return 1;
 	}
@@ -321,11 +339,11 @@ int SelectorGen::add_low_exception(selector_table *table, int row)
 	int num_mode_ints = payload_bits / mode;
 	if (num_low_ints == num_mode_ints)
 		return 0;
-	table->row_lengths[row] = num_low_ints;
+	table->rows[row].length = num_low_ints;
 	for (int i = 0; i < num_low_ints; i++)
-		table->bitwidths[row][i] = lowest;
+		table->rows[row].bitwidths[i] = lowest;
     
-	table->rows++;
+	table->num_rows++;
 	return 1;
 	}
 
@@ -338,11 +356,11 @@ void SelectorGen::generate_perms(selector_table *table, uint selected, int *x, i
 	{
 	do
 		{
-		if (callback && table->rows < num_selectors)
-			callback(table, table->rows, x, n);
+		if (callback && table->num_rows < num_selectors)
+			callback(table, table->num_rows, x, n);
 		selected++;
 		}
-	while (next_lex_perm(x, n) && table->rows <= num_selectors);
+	while (next_lex_perm(x, n) && table->num_rows <= num_selectors);
 	}
 
 /* 
@@ -351,10 +369,10 @@ void SelectorGen::generate_perms(selector_table *table, uint selected, int *x, i
 void SelectorGen::add_perm_to_table(selector_table *table, uint row, int *permutation,
 	int length)
 	{
-	table->row_lengths[row] = length;
+	table->rows[row].length = length;
 	for (int i = 0; i < length; i++)
-		table->bitwidths[row][i] = permutation[i];
-	table->rows++;
+		table->rows[row].bitwidths[i] = permutation[i];
+	table->num_rows++;
 	}
 
 /* 

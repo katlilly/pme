@@ -52,17 +52,19 @@ int main(int argc, char *argv[])
 			{
 			SelectorGen generator(selectorsize, listnumber, encodedstats);
 			SelectorGen::selector_table *table = new SelectorGen::selector_table;
-
+			
 			table->num_rows = 0;
 			int table_size = generator.get_num_selectors();
 			table->rows = new SelectorGen::selector_row[table_size];
+
 			for (int i = 0; i < table_size; i++)
 				table->rows[i].bitwidths = new int[generator.get_payload_bits()];
-						
 			generator.generate(table);
 
+			generator.sort_table(*table);
 			generator.print_stats();
 			generator.print_table(*table);
+
 
 			for (int i = 0; i < table_size; i++)
 				delete [] table->rows[i].bitwidths;

@@ -8,13 +8,19 @@ class SelectorGen
 	uint mode;
 	uint high_exception;
 	uint highest;
-
-	struct selector_table {
-		uint rows;
-		int *row_lengths;
-		int **bitwidths;
+	
+	struct selector_row
+		{
+		int length;
+		int *bitwidths;
 		};
  
+	struct selector_table
+		{
+		uint num_rows;
+		selector_row *rows;
+		};
+		
 	private:
 	uint selector_bits;
 	uint num_selectors;
@@ -83,6 +89,12 @@ class SelectorGen
 	int get_payload_bits();
 
 	/*
+	  Sort the table by row length, from longest to shortest. This is
+	  necessary before doing the compression.
+	*/
+	void sort_table(selector_table table);
+	
+	/*
 	  Print the selector table to screen. for error checking.
 	*/
 	void print_table(selector_table table);
@@ -94,8 +106,9 @@ class SelectorGen
   
 	private:
 
-	/* below functions called by smart_generator() and add one or more
-		rows to the selector table */
+	/* below functions called by generator() and add one or more
+		rows to the selector table 
+	*/
 	int all_ones(selector_table *table);
 	void add_one_int_selector(selector_table *table, int row);
 	int add_two_dgap_selectors(selector_table *table, int row);

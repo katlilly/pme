@@ -1,6 +1,12 @@
 
 all : test_stats test_sg test_sel_size
 
+test_sort : listStats.cpp selectorGen.cpp tests/sort_test.cpp
+	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/sort_test.cpp -o test_sort
+
+run_test_sort :
+	./test_sort testdata/testdata.bin
+
 test_sel_size : listStats.cpp selectorGen.cpp tests/selectorsize_test.cpp
 	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/selectorsize_test.cpp -o test_sel_size
 
@@ -11,4 +17,4 @@ test_sg : listStats.cpp selectorGen.cpp tests/sg_test.cpp
 	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/sg_test.cpp -o test_sg
 
 clean:
-	- rm -f *.gcno *.gcda *.gcov test_pme test_stats test_sg test_sel_size testdata/test_sg.txt testdata/test_sg.txt *# *~ tests/*~
+	- rm -f *.gcno *.gcda *.gcov test_pme test_sort test_stats test_sg test_sel_size testdata/test_sg.txt testdata/test_sg.txt *# *~ tests/*~
