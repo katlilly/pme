@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cstdlib>
 #include <algorithm>
 #include "selectorGen.h"
 
@@ -97,24 +98,6 @@ void SelectorGen::generate(selector_table *table)
 	if (row < num_selectors && lowest <= payload_bits / 3)
 		row += add_low_exception(table, row);
   
-	}
-
-/*
-   Sort the table by row length, from longest to shortest. This is
-   necessary before doing the compression.
- */
-void SelectorGen::sort_table(selector_table table)
-	{
-	printf("number of rows = %d\n", table.num_rows);
-	int longest = 0;
-	for (uint row = 0; row < table.num_rows; row++)
-		if (table.rows[row].length > longest)
-			longest = table.rows[row].length;
-	printf("length of longest row = %d\n\n", longest);
-
-	
-
-	
 	}
 
 /* 

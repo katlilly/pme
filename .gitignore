@@ -10,6 +10,7 @@ _install/bin
 postings.bin
 pme
 rtests
+test_sel_size
 testcov
 covtest
 *.gcov

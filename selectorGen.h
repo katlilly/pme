@@ -89,12 +89,6 @@ class SelectorGen
 	int get_payload_bits();
 
 	/*
-	  Sort the table by row length, from longest to shortest. This is
-	  necessary before doing the compression.
-	*/
-	void sort_table(selector_table table);
-	
-	/*
 	  Print the selector table to screen. for error checking.
 	*/
 	void print_table(selector_table table);

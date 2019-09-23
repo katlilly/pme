@@ -8,6 +8,16 @@
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
 
+int compare_rows(const void *a, const void *b)
+	{
+	const SelectorGen::selector_row *ra = (const SelectorGen::selector_row *) a;
+	const SelectorGen::selector_row *rb = (const SelectorGen::selector_row *) b;
+	int la = ra->length;
+	int lb = rb->length;
+	return la < lb ? 1 : la == lb ? 0 : -1;
+	}
+
+
 int main(int argc, char *argv[])
 	{
 	const char *filename;
@@ -16,8 +26,6 @@ int main(int argc, char *argv[])
 	else
 		exit(printf("Usage: %s <binfile>\n", argv[0]));
 	FILE *fp;
-	//if (NULL == (fp = fopen(filename, "rb")))
-	//	exit(printf("Cannot open %s\n", filename));
 
 	uint32_t length;
 	int listnumber = 0;
@@ -27,7 +35,7 @@ int main(int argc, char *argv[])
 	clock_t start, end;
 	double used;
 
-	for (int selectorsize = 4; selectorsize < 16; selectorsize++)
+	for (int selectorsize = 4; selectorsize < 9; selectorsize++)
 		{
 		if (NULL == (fp = fopen(filename, "rb")))
 			exit(printf("Cannot open %s\n", filename));
@@ -61,19 +69,19 @@ int main(int argc, char *argv[])
 				{
 				SelectorGen generator(selectorsize, listnumber, encodedstats);
 				SelectorGen::selector_table *table = new SelectorGen::selector_table;
-				table->rows = 0;
+				table->num_rows = 0;
 				int table_size = generator.get_num_selectors();
-				table->row_lengths = new int[table_size];
-				table->bitwidths = new int*[table_size];
-
+				table->rows = new SelectorGen::selector_row[table_size];
 				for (int i = 0; i < table_size; i++)
-					table->bitwidths[i] = new int[generator.get_payload_bits()];
+					table->rows[i].bitwidths = new int[generator.get_payload_bits()];
+
 				generator.generate(table);
-
-				delete [] table->row_lengths;
+				qsort(table->rows, table->num_rows, sizeof(*table->rows), compare_rows);
+				//generator.print_table(*table);
+				
 				for (int i = 0; i < table_size; i++)
-					delete [] table->bitwidths[i];
-				delete [] table->bitwidths;
+					delete [] table->rows[i].bitwidths;
+				delete [] table->rows;
 				delete table;
 				}
 
