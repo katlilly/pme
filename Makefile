@@ -1,8 +1,8 @@
 
 all : test_stats test_sg test_sel_size test_sort test_compression
 
-test_compression : listStats.cpp selectorGen.cpp tests/compression_test.cpp
-	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/compression_test.cpp -o test_compression
+test_compression : listStats.cpp compressPME.cpp selectorGen.cpp tests/compression_test.cpp
+	g++ -g -Wall -std=c++11 listStats.cpp compressPME.cpp selectorGen.cpp tests/compression_test.cpp -o test_compression
 
 test_sort : listStats.cpp selectorGen.cpp tests/sort_test.cpp
 	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/sort_test.cpp -o test_sort
