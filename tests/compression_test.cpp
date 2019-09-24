@@ -4,6 +4,7 @@
 #include <time.h>
 #include "../listStats.h"
 #include "../selectorGen.h"
+#include "../compressPME.h"
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -32,8 +33,9 @@ int main(int argc, char *argv[])
 	clock_t start, end;
 	double used;
 
-	for (int selectorsize = 4; selectorsize < 9; selectorsize++)
-		{
+	int selectorsize = 4;
+	//for (int selectorsize = 4; selectorsize < 9; selectorsize++)
+	//	{
 		if (NULL == (fp = fopen(filename, "rb")))
 			exit(printf("Cannot open %s\n", filename));
 
@@ -89,7 +91,7 @@ int main(int argc, char *argv[])
 		printf("selector size %d: %.2f seconds\n", selectorsize, used);
 
 		fclose(fp);
-		}
+		//}
 	
 	delete [] postings_list;
 	delete [] bitwidths;

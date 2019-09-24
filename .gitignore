@@ -10,9 +10,11 @@ _install/bin
 postings.bin
 pme
 rtests
+test_sort
 test_sel_size
 testcov
 covtest
+test_compression
 *.gcov
 *.gcno
 *.gcda
