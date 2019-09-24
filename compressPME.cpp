@@ -45,7 +45,7 @@ int CompressPME::get_bitwidth(uint x)
 
 int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_to_compress)
 	{
-	printf("using table with %d rows\n", table->num_rows);
+	//printf("using table with %d rows\n", table->num_rows);
 	//for (uint row = 0; row < table->num_rows; row++)
 	//	printf("row length: %d\n", table->rows[row].length);
 	
@@ -77,7 +77,7 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 			break;
 		}
 
-	printf("chose selector %d\n", which);
+	//printf("chose selector %d\n", which);
 
 	/*
 	  Pack one word
@@ -85,9 +85,28 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 
 
 	
-	printf("return value (topack) = %d\n", topack);
+	//printf("return value (topack) = %d\n", topack);
 	return topack;   // return number of dgaps compressed into current word
 	}
+
+
+CompressPME::record CompressPME::encode(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_to_compress)
+	{
+	int total_compressed = 0;
+	int compressed = 0;
+	CompressPME::record result;
+	result.compressed_size = 0;
+	while (n_to_compress)
+		{
+		compressed = encode_one_word(dest++, raw + total_compressed, table, n_to_compress);
+		total_compressed += compressed;
+		n_to_compress -= compressed;
+		result.compressed_size += 4;
+		}
+	result.n_dgaps_compressed = total_compressed;
+	return result;
+	}
+
 
 int CompressPME::decode(uint32_t *dest, uint32_t *compressed, int n_dgaps_to_decompress)
 	{

@@ -73,10 +73,14 @@ int main(int argc, char *argv[])
 		/*
 		  Compress the current list
 		 */
-		printf("\n\n\n\nlist number %d, length: %d\n", listnumber, length);
-		generator.print_table(*table);
+		printf("\nlist number %d, length: %u\n", listnumber, length);
+		//generator.print_table(*table);
 		CompressPME *compressor = new CompressPME();
-		compressor->encode_one_word(compressed, dgaps, table, length);
+		CompressPME::record result = compressor->encode(compressed, dgaps, table, length);
+		printf("compressed %d of %d into %d bytes\n", result.n_dgaps_compressed, length, result.compressed_size);
+		if (result.n_dgaps_compressed != length)
+			exit(printf("wrong number of dgaps decompressed\n"));
+		
 		
 		/*
 		  Tidy up from this list
