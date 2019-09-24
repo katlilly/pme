@@ -7,7 +7,7 @@
 /*
   convert an array of document numbers to an array of d-gaps
  */
-void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
+void ListStats::docnums_to_dgaps(uint32_t *dest, int *source, int length)
 	{
 	int prev = 0;
 	for (int i = 0; i < length; i++)
@@ -21,11 +21,11 @@ void ListStats::docnums_to_dgaps(int *dest, int *source, int length)
   convert an array of d-gaps to an array of number of bits required to
   express those d-gaps
 */
-void ListStats::dgaps_to_bitwidths(int *dest, int *source, int length)
-	{
-	for (int i = 0; i < length; i++)
-		dest[i] = getBitwidth(source[i]);
-	}
+// void ListStats::dgaps_to_bitwidths(int *dest, int *source, int length)
+// 	{
+// 	for (int i = 0; i < length; i++)
+// 		dest[i] = getBitwidth(source[i]);
+// 	}
 
 /* 
 	convert an array of document numbers to an array of bitwidths of d-gaps

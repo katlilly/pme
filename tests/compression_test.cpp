@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	int listnumber = 0;
 	int *postings_list = new int[NUMDOCS];
 	int *bitwidths = new int[NUMDOCS];
-	int *dgaps = new int[NUMDOCS];
+	uint32_t *dgaps = new uint32_t[NUMDOCS];
 	int selectorsize = 4;
 	uint32_t *compressed = new uint32_t[NUMDOCS];
 				
@@ -73,8 +73,10 @@ int main(int argc, char *argv[])
 		/*
 		  Compress the current list
 		 */
+		printf("\n\n\n\nlist number %d, length: %d\n", listnumber, length);
+		generator.print_table(*table);
 		CompressPME *compressor = new CompressPME();
-		compressor->encode(compressed, dgaps, length);
+		compressor->encode_one_word(compressed, dgaps, table, length);
 		
 		/*
 		  Tidy up from this list
