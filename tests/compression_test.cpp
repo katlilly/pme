@@ -78,9 +78,13 @@ int main(int argc, char *argv[])
 		CompressPME *compressor = new CompressPME();
 		CompressPME::record result = compressor->encode(compressed, dgaps, table, length);
 		printf("compressed %d of %d into %d bytes\n", result.n_dgaps_compressed, length, result.compressed_size);
-		if (result.n_dgaps_compressed != length)
+		if (result.n_dgaps_compressed != (int)length)
 			exit(printf("wrong number of dgaps decompressed\n"));
-		
+
+		int num_words = result.compressed_size / 4;
+		for (int i = 0; i < num_words; i++)
+			printf("%d, ", compressed[i]);
+		printf("\n");
 		
 		/*
 		  Tidy up from this list

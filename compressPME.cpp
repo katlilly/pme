@@ -45,21 +45,16 @@ int CompressPME::get_bitwidth(uint x)
 
 int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_to_compress)
 	{
-	//printf("using table with %d rows\n", table->num_rows);
-	//for (uint row = 0; row < table->num_rows; row++)
-	//	printf("row length: %d\n", table->rows[row].length);
-	
-	
-	uint which;                               // which row in selector table
-	int column;                              // which element in bitwidth array
-	int current;                             // count elements within this compressed word
-	int topack;                              // min of ints per selector and remaining data to compress
-	uint32_t *dgap = (uint32_t *) raw;       // pointer to current integer to be compressed
-	uint32_t *start = raw;                   // pointer to what will be first dgap in current compressed word
-	uint32_t *end = raw + n_to_compress;     // pointer to end of raw data
+	uint which;                             // which row in selector table
+	int column;                             // which element in bitwidth array
+	int current;                            // count elements within this compressed word
+	int topack;                             // min of ints per selector and remaining data to compress
+	uint32_t *dgap = (uint32_t *) raw;      // pointer to current integer to be compressed
+	uint32_t *start = raw;                  // pointer to what will be first dgap in current compressed word
+	uint32_t *end = raw + n_to_compress;    // pointer to end of raw data
 	
 	/*
-	  Chose selector
+	  Chose the selector
 	 */
 	for (which = 0; which < table->num_rows; which++)
 		{
@@ -76,16 +71,21 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 		if (dgap >= end)
 			break;
 		}
-
 	//printf("chose selector %d\n", which);
 
-	/*
+   /*
 	  Pack one word
 	*/
+	*dest = 0 | which;  // pack the selctor
+	column = 0;
+	int shift_distance = which;
+	for (current = 0; current < topack; current++)
+		{
+		*dest = *dest | raw[current] << shift_distance;
+		shift_distance += table->rows[which].bitwidths[column];
+		column++;
+		}
 
-
-	
-	//printf("return value (topack) = %d\n", topack);
 	return topack;   // return number of dgaps compressed into current word
 	}
 
