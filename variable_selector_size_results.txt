@@ -1,0 +1,28 @@
+
+Selector bits: 2
+Raw bytes:         164823720
+Compressed bytes:   45972852
+
+Selector bits: 3
+Raw bytes:         164823720
+Compressed bytes:   48152612
+
+Selector bits: 4
+Raw bytes:         164823720
+Compressed bytes:   47717160
+
+Selector bits: 5
+Raw bytes:         164823720
+Compressed bytes:   50169628
+
+Selector bits: 6
+Raw bytes:         164823720
+Compressed bytes:   52452548
+
+Selector bits: 7
+Raw bytes:         164823720
+Compressed bytes:   52630608
+
+Selector bits: 8
+Raw bytes:         164823720
+Compressed bytes:   53137136

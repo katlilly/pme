@@ -36,15 +36,15 @@ class SelectorGen
    */
 	SelectorGen(int selector_bits_in, int list_num, uint encoded_stats) 
 		{
+		/*
+		   Don't allow unreasonable number of selector bits
+		 */
 		if (selector_bits_in < 2 || selector_bits_in > 16)
 			exit(printf("not a reasonable selector size\n"));
-      selector_bits = selector_bits_in;
-      listnumber = list_num;
-      payload_bits = 32 - selector_bits;
-      num_selectors = 1;
-      for (uint i = 0; i < selector_bits; i++)
-			num_selectors *= 2;
 
+		/*
+		  Decode list statistics
+		 */
       uint code = encoded_stats;
       lowest = code & 0xff;
       code = code >> 8;
@@ -53,6 +53,27 @@ class SelectorGen
       high_exception = code & 0xff;
       code = code >> 8;
       mode = code & 0xff;
+		
+		/* 
+			input parameter provides only an upper limit on number of
+			bits in selector
+		 */
+		if (lowest > 14)
+			selector_bits = 2;
+		else if (lowest > 12 && selector_bits_in > 2)
+			selector_bits = 3;
+		else if (lowest > 10 && selector_bits_in > 3)
+			selector_bits = 4;
+		else
+			selector_bits = selector_bits_in;
+		
+      listnumber = list_num;
+      payload_bits = 32 - selector_bits;
+      num_selectors = 1;
+      for (uint i = 0; i < selector_bits; i++)
+			num_selectors *= 2;
+
+
 		}
   
 	public:
