@@ -48,7 +48,7 @@ int SelectorGen::get_payload_bits()
 void SelectorGen::generate(selector_table *table)
 	{
 	uint row = 0;
-
+	table->s_bits = selector_bits;
 	/* 
 		Create selector table for lists where more than 90% of dgaps are 1
 	*/

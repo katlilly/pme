@@ -32,10 +32,16 @@ int main(int argc, char *argv[])
 	int *postings_list = new int [NUMDOCS];
 	int *bitwidths = new int [NUMDOCS];
 	uint32_t *dgaps = new uint32_t [NUMDOCS];
-	int selectorsize = 4;
 	uint32_t *compressed = new uint32_t [NUMDOCS];
 	uint32_t *decoded = new uint32_t [NUMDOCS];
-				
+
+	// record sizes in bytes
+	int raw_data_size = 0;
+	int compressed_data_size = 0;
+
+	int selectorsize = 3;
+
+	
 	/* 
 		Read in each postings list (WSJ postings.bin) 
 	*/
@@ -74,26 +80,30 @@ int main(int argc, char *argv[])
 		/*
 		  Compress the current list
 		 */
-		//printf("\nlist number %d, length: %u\n", listnumber, length);
-		//generator.print_table(*table);
+		printf("\n\n\nlist number %d, length: %u\n", listnumber, length);
+		generator.print_table(*table);
 		CompressPME *compressor = new CompressPME();
 		CompressPME::record result = compressor->encode(compressed, dgaps, table, length);
-		//printf("compressed %d of %d into %d bytes\n", result.n_dgaps_compressed, length, result.compressed_size);
 		if (result.n_dgaps_compressed != (int)length)
 			exit(printf("wrong number of dgaps decompressed\n"));
 
+		raw_data_size += length * 4;
+		compressed_data_size += result.compressed_size;
+
+		
 		int num_decoded = compressor->decode(decoded, compressed, table, result.n_dgaps_compressed);
 
+		
+		
 		for (int i = 0; i < num_decoded; i++)
+			{
+			//printf("[%d %d], ", dgaps[i], decoded[i]);
 			if (dgaps[i] != decoded[i])
-				exit(printf("in list %d, decoded doesn't equal original: %d, %d\n", listnumber, dgaps[i], decoded[i]));
-		//printf("[%d %d], ", dgaps[i], decoded[i]);
-		//printf("\n");
+				//printf("in list %d, decoded doesn't equal original: %d, %d\n", listnumber, dgaps[i], decoded[i]);
+				;//exit(printf("in list %d, decoded doesn't equal original: %d, %d\n", listnumber, dgaps[i], decoded[i]));
+			}
 		
 		
-		/*
-		  Tidy up from this list
-		*/
 		for (int i = 0; i < table_size; i++)
 			delete [] table->rows[i].bitwidths;
 		delete [] table->rows;
@@ -102,6 +112,8 @@ int main(int argc, char *argv[])
 		listnumber++;
 		}
 
+	printf("Selector size: %d\nRaw size:       %d\nCompressed size: %d\n", selectorsize, raw_data_size, compressed_data_size);
+	
 	fclose(fp);
 		
 	delete [] postings_list;

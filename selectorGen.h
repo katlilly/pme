@@ -17,6 +17,7 @@ class SelectorGen
  
 	struct selector_table
 		{
+		int s_bits;
 		uint num_rows;
 		selector_row *rows;
 		};

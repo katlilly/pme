@@ -10,6 +10,7 @@ int CompressPME::min(uint a, uint b)
 	return a < b ? a : b;
 	}
 
+
 int CompressPME::get_bitwidth(uint x)
 	{
 	int r = 32;
@@ -73,19 +74,17 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 		if (dgap >= end)
 			break;
 		}
-	//printf("using selector: %d\n", which);
+	
    /*
-	  Pack one word
+	  Pack data into 32 bits
 	*/
 	*dest = 0 | which;  // pack the selctor
 	column = 0;
-	//int shift_distance = get_bitwidth(table->num_rows);  // this isn't right. needs to be bitwidth(maxnumber) of selectors
-	int shift_distance = 4; /// need to think about how to access this value
+	int shift_distance = table->s_bits; 
 	for (current = 0; current < topack; current++)
 		{
 		*dest = *dest | raw[current] << shift_distance;
-		shift_distance += table->rows[which].bitwidths[column];
-		column++;
+		shift_distance += table->rows[which].bitwidths[column++];
 		}
 
 	return topack;   // return number of dgaps compressed into current word
@@ -98,6 +97,7 @@ CompressPME::record CompressPME::encode(uint32_t *dest, uint32_t *raw, SelectorG
 	int compressed = 0;
 	CompressPME::record result;
 	result.compressed_size = 0;
+
 	while (n_to_compress)
 		{
 		compressed = encode_one_word(dest++, raw + total_compressed, table, n_to_compress);
@@ -105,44 +105,46 @@ CompressPME::record CompressPME::encode(uint32_t *dest, uint32_t *raw, SelectorG
 		n_to_compress -= compressed;
 		result.compressed_size += 4;
 		}
+	
 	result.n_dgaps_compressed = total_compressed;
 	return result;
 	}
 
 
-int CompressPME::decode_one_word(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress)
+uint CompressPME::decode_one_word(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress)
 	{
-	int bits, ints_out = 0;;
+	int bits;
+	uint ints_out = 0;
 	uint32_t mask = 15;
 	uint32_t payload = *compressed;
 	int selector = payload & mask;
-	payload = payload >> 4;
+	payload = payload >> table->s_bits;
+	printf("selector: %d, length: %d\n", selector, table->rows[selector].length);
+
 	for (int column = 0; column < table->rows[selector].length; column++)
 		{
+		printf("Column: %d, bitwidth: %d\n", column, table->rows[selector].bitwidths[column]);
+
 		if (ints_out < n_to_decompress)
 			{
 			bits = table->rows[selector].bitwidths[column];
 			mask = pow(2, bits) - 1;
 			dest[ints_out++] = payload & mask;
 			payload = payload >> bits;
-			//printf("%d, ", mask);
 			}
 		}
-	//printf("\n");
-	
-	
-	//printf("found selector: %d, %d ints per word\n", selector, table->rows[selector].length);
-		
-//	return min(table->rows[selector].length, n_to_decompress);
 	
 	return ints_out;
 	}
 
-
+/*
+  Decode a list of PME-compressed d-gaps
+*/
 int CompressPME::decode(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress)
 	{
 	int n_decompressed = 0;
 	int total_decompressed = 0;
+
 	while (n_to_decompress > 0)
 		{
 		n_decompressed = decode_one_word(dest, compressed++, table, n_to_decompress);
