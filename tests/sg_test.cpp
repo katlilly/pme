@@ -7,6 +7,14 @@
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
 
+int compare_rows(const void *a, const void *b)
+	{
+	const SelectorGen::selector_row *row_a = (const SelectorGen::selector_row *) a;
+	const SelectorGen::selector_row *row_b = (const SelectorGen::selector_row *) b;
+	return row_a->length < row_b->length ? 1 : row_a->length == row_b->length ? 0 : -1;
+	}
+
+
 int main(int argc, char *argv[])
 	{
 	const char *filename;
@@ -60,7 +68,7 @@ int main(int argc, char *argv[])
 				table->rows[i].bitwidths = new int[generator.get_payload_bits()];
 						
 			generator.generate(table);
-
+			qsort(table->rows, table->num_rows, sizeof(*table->rows), compare_rows);
 			generator.print_stats();
 			generator.print_table(*table);
 

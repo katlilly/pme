@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	for (int selectorsize = 2; selectorsize < 9; selectorsize++)
 		{
 		/* 
-			record data sizes in bytes
+			record sizes in bytes
 		*/
 		int raw_data_size = 0;
 		int compressed_data_size = 0;

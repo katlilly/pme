@@ -17,12 +17,12 @@ Compressed bytes:   50169628
 
 Selector bits: 6
 Raw bytes:         164823720
-Compressed bytes:   52452548
+Compressed bytes:   50177292
 
 Selector bits: 7
 Raw bytes:         164823720
-Compressed bytes:   52630608
+Compressed bytes:   50152168
 
 Selector bits: 8
 Raw bytes:         164823720
-Compressed bytes:   53137136
+Compressed bytes:   50470300

@@ -64,6 +64,8 @@ class SelectorGen
 			selector_bits = 3;
 		else if (lowest > 10 && selector_bits_in > 3)
 			selector_bits = 4;
+		else if (lowest > 2 && selector_bits_in > 4)
+			selector_bits = 5;
 		else
 			selector_bits = selector_bits_in;
 		
