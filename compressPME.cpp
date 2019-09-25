@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <cstdlib>
+#include <math.h>
 #include "compressPME.h"
 #include "selectorGen.h"
+
 
 int CompressPME::min(uint a, uint b)
 	{
@@ -71,7 +73,7 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 		if (dgap >= end)
 			break;
 		}
-	printf("using selector: %d\n", which);
+	//printf("using selector: %d\n", which);
    /*
 	  Pack one word
 	*/
@@ -110,14 +112,30 @@ CompressPME::record CompressPME::encode(uint32_t *dest, uint32_t *raw, SelectorG
 
 int CompressPME::decode_one_word(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress)
 	{
+	int bits, ints_out = 0;;
 	uint32_t mask = 15;
-	int selector = *compressed & mask;
-	printf("found selector: %d, %d ints per word\n", selector, table->rows[selector].length);
-		
-
-
+	uint32_t payload = *compressed;
+	int selector = payload & mask;
+	payload = payload >> 4;
+	for (int column = 0; column < table->rows[selector].length; column++)
+		{
+		if (ints_out < n_to_decompress)
+			{
+			bits = table->rows[selector].bitwidths[column];
+			mask = pow(2, bits) - 1;
+			dest[ints_out++] = payload & mask;
+			payload = payload >> bits;
+			//printf("%d, ", mask);
+			}
+		}
+	//printf("\n");
 	
-	return min(table->rows[selector].length, n_to_decompress);
+	
+	//printf("found selector: %d, %d ints per word\n", selector, table->rows[selector].length);
+		
+//	return min(table->rows[selector].length, n_to_decompress);
+	
+	return ints_out;
 	}
 
 
@@ -133,5 +151,5 @@ int CompressPME::decode(uint32_t *dest, uint32_t *compressed, SelectorGen::selec
 		dest += n_decompressed;
 		}
 
-	return n_decompressed;
+	return total_decompressed;
 	}
