@@ -80,7 +80,7 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 	*/
 	*dest = 0 | which;  // pack the selctor
 	column = 0;
-	int shift_distance = table->s_bits; 
+	int shift_distance = table->s_bits;
 	for (current = 0; current < topack; current++)
 		{
 		*dest = *dest | raw[current] << shift_distance;
@@ -115,16 +115,13 @@ uint CompressPME::decode_one_word(uint32_t *dest, uint32_t *compressed, Selector
 	{
 	int bits;
 	uint ints_out = 0;
-	uint32_t mask = 15;
+	uint32_t mask = pow(2, table->s_bits) - 1;
 	uint32_t payload = *compressed;
 	int selector = payload & mask;
 	payload = payload >> table->s_bits;
-	printf("selector: %d, length: %d\n", selector, table->rows[selector].length);
-
+	
 	for (int column = 0; column < table->rows[selector].length; column++)
 		{
-		printf("Column: %d, bitwidth: %d\n", column, table->rows[selector].bitwidths[column]);
-
 		if (ints_out < n_to_decompress)
 			{
 			bits = table->rows[selector].bitwidths[column];
