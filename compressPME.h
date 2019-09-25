@@ -25,12 +25,15 @@ class CompressPME
 		}
 
 	public:
-	//int encode(uint32_t *dest, int *raw, int n_dgaps_to_compress);
-	CompressPME::record encode(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_to_compress);
-	int encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_dgaps_to_compress);
-	int decode(uint32_t *dest, uint32_t *compressed, int n_dgaps_to_decompress);
+	
+	CompressPME::record encode(uint32_t *dest, uint32_t *raw,
+		SelectorGen::selector_table *table, int n_to_compress);
+	
+	int decode(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress);
 
 	private:
+	int encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_dgaps_to_compress);
+	int decode_one_word(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress);
 	int min(uint a, uint b);
 	int get_bitwidth(uint x); 
 	

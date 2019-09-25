@@ -29,11 +29,12 @@ int main(int argc, char *argv[])
 
 	uint32_t length;
 	int listnumber = 0;
-	int *postings_list = new int[NUMDOCS];
-	int *bitwidths = new int[NUMDOCS];
-	uint32_t *dgaps = new uint32_t[NUMDOCS];
+	int *postings_list = new int [NUMDOCS];
+	int *bitwidths = new int [NUMDOCS];
+	uint32_t *dgaps = new uint32_t [NUMDOCS];
 	int selectorsize = 4;
-	uint32_t *compressed = new uint32_t[NUMDOCS];
+	uint32_t *compressed = new uint32_t [NUMDOCS];
+	uint32_t *decoded = new uint32_t [NUMDOCS];
 				
 	/* 
 		Read in each postings list (WSJ postings.bin) 
@@ -81,10 +82,10 @@ int main(int argc, char *argv[])
 		if (result.n_dgaps_compressed != (int)length)
 			exit(printf("wrong number of dgaps decompressed\n"));
 
-		int num_words = result.compressed_size / 4;
-		for (int i = 0; i < num_words; i++)
-			printf("%d, ", compressed[i]);
-		printf("\n");
+		//compressor->decode_one_word(decoded, compressed, table, result.n_dgaps_compressed);
+		compressor->decode(decoded, compressed, table, result.n_dgaps_compressed);
+		
+		
 		
 		/*
 		  Tidy up from this list
@@ -103,6 +104,7 @@ int main(int argc, char *argv[])
 	delete [] bitwidths;
 	delete [] dgaps;
 	delete [] compressed;
+	delete [] decoded;
 
 	return 0;
 	}
