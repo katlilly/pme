@@ -94,13 +94,12 @@ int CompressPME::encode_one_word(uint32_t *dest, uint32_t *raw, SelectorGen::sel
 CompressPME::record CompressPME::encode(uint32_t *dest, uint32_t *raw, SelectorGen::selector_table *table, int n_to_compress)
 	{
 	int total_compressed = 0;
-	int compressed = 0;
 	CompressPME::record result;
 	result.compressed_size = 0;
 
 	while (n_to_compress)
 		{
-		compressed = encode_one_word(dest++, raw + total_compressed, table, n_to_compress);
+		int compressed = encode_one_word(dest++, raw + total_compressed, table, n_to_compress);
 		total_compressed += compressed;
 		n_to_compress -= compressed;
 		result.compressed_size += 4;
@@ -139,12 +138,11 @@ uint CompressPME::decode_one_word(uint32_t *dest, uint32_t *compressed, Selector
 */
 int CompressPME::decode(uint32_t *dest, uint32_t *compressed, SelectorGen::selector_table *table, uint n_to_decompress)
 	{
-	int n_decompressed = 0;
 	int total_decompressed = 0;
 
 	while (n_to_decompress > 0)
 		{
-		n_decompressed = decode_one_word(dest, compressed++, table, n_to_decompress);
+		int n_decompressed = decode_one_word(dest, compressed++, table, n_to_decompress);
 		n_to_decompress -= n_decompressed;
 		total_decompressed += n_decompressed;
 		dest += n_decompressed;

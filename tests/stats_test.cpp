@@ -14,10 +14,10 @@ int main(int argc, char *argv[])
   if (NULL == (fp = fopen(filename, "rb")))
     exit(printf("Cannot open %s\n", filename));
 
-  int *postings_list = new int[NUMDOCS];
-  uint32_t *dgaps = new uint32_t[NUMDOCS];
-  int *bitwidths = new int[NUMDOCS];
-  int *bitwidths2 = new int[NUMDOCS];
+  int *postings_list = new int [NUMDOCS];
+  uint32_t *dgaps = new uint32_t [NUMDOCS];
+  int *bitwidths = new int [NUMDOCS];
+  uint32_t *bitwidths2 = new uint32_t [NUMDOCS];
   uint32_t length, listnumber = 0;
   
   /*
@@ -42,15 +42,15 @@ int main(int argc, char *argv[])
     */
     ListStats ls(listnumber, length);
     ls.docnums_to_dgaps(dgaps, postings_list, length);
-    //ls.dgaps_to_bitwidths(bitwidths2, dgaps, length);
+    ls.dgaps_to_bitwidths(bitwidths2, dgaps, length);
     ls.docnums_to_dgap_bitwidths(bitwidths, postings_list, length);
     
     /*
       Check two different bitwidth calculations against each other
     */
-    //for (uint i = 0; i < length; i++)
-	 //if (bitwidths[i] != bitwidths2[i])
-	 //exit(printf("list %u, bitwidth calculation error\n", listnumber));
+    for (uint i = 0; i < length; i++)
+		 if (bitwidths[i] != (int) bitwidths2[i])
+			 exit(printf("list %u, bitwidth calculation error\n", listnumber));
     
     /*
       Calculate mean bitwidth and stddev for each list, output will be

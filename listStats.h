@@ -46,7 +46,7 @@ class ListStats
 	  convert an array of d-gaps to an array of number of bits required to
 	  express those d-gaps
   */ 
-  //void dgaps_to_bitwidths(int *dest, int *source, int length);
+  void dgaps_to_bitwidths(uint32_t *dest, uint32_t *source, int length);
 
   /* 
 	  convert an array of document numbers to an array of bitwidths of d-gaps

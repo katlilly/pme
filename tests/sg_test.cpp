@@ -54,29 +54,24 @@ int main(int argc, char *argv[])
 		/* 
 			Generate a selector table for current list based on its statistics
 		*/
-		int selectorsize = 4;
-		
-		if (true)
-			{
-			SelectorGen generator(selectorsize, listnumber, encodedstats);
-			SelectorGen::selector_table *table = new SelectorGen::selector_table;
+		SelectorGen generator(4, listnumber, encodedstats);
+		SelectorGen::selector_table *table = new SelectorGen::selector_table;
 
-			table->num_rows = 0;
-			int table_size = generator.get_num_selectors();
-			table->rows = new SelectorGen::selector_row[table_size];
-			for (int i = 0; i < table_size; i++)
-				table->rows[i].bitwidths = new int[generator.get_payload_bits()];
+		table->num_rows = 0;
+		int table_size = generator.get_num_selectors();
+		table->rows = new SelectorGen::selector_row[table_size];
+		for (int i = 0; i < table_size; i++)
+			table->rows[i].bitwidths = new int[generator.get_payload_bits()];
 						
-			generator.generate(table);
-			qsort(table->rows, table->num_rows, sizeof(*table->rows), compare_rows);
-			generator.print_stats();
-			generator.print_table(*table);
+		generator.generate(table);
+		qsort(table->rows, table->num_rows, sizeof(*table->rows), compare_rows);
+		generator.print_stats();
+		generator.print_table(*table);
 
-			for (int i = 0; i < table_size; i++)
-				delete [] table->rows[i].bitwidths;
-			delete [] table->rows;
-			delete table;
-			}
+		for (int i = 0; i < table_size; i++)
+			delete [] table->rows[i].bitwidths;
+		delete [] table->rows;
+		delete table;
 
 		listnumber++;
 		}

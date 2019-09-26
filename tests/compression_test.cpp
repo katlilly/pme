@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 		filename = argv[1];
 	else
 		exit(printf("Usage: %s <binfile>\n", argv[0]));
-	FILE *fp;
 
 	uint32_t length;
 	int listnumber = 0;
@@ -46,6 +45,7 @@ int main(int argc, char *argv[])
 		/* 
 			Read in each postings list (WSJ postings.bin) 
 		*/
+		FILE *fp;
 		if (NULL == (fp = fopen(filename, "rb")))
 			exit(printf("Cannot open %s\n", filename));
 		
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 			for (int i = 0; i < num_decoded; i++)
 				{
 				if (dgaps[i] != decoded[i])
-					exit(printf("in list %d, decoded doesn't equal original: %d, %d\n", listnumber, dgaps[i], decoded[i]));
+					exit(printf("in list %d, decoded doesn't equal original: %d, %u\n", listnumber, dgaps[i], decoded[i]));
 				}
 		
 			for (int i = 0; i < table_size; i++)

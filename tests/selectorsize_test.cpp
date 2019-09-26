@@ -22,22 +22,19 @@ int main(int argc, char *argv[])
 		filename = argv[1];
 	else
 		exit(printf("Usage: %s <binfile>\n", argv[0]));
-	FILE *fp;
 
 	uint32_t length;
 	int listnumber = 0;
 	int *postings_list = new int[NUMDOCS];
 	int *bitwidths = new int[NUMDOCS];
 
-	clock_t start, end;
-	double used;
-
 	for (int selectorsize = 4; selectorsize < 9; selectorsize++)
 		{
+		FILE *fp;
 		if (NULL == (fp = fopen(filename, "rb")))
 			exit(printf("Cannot open %s\n", filename));
 
-		start = clock();
+		clock_t start = clock();
 				
 		/* 
 			Read in each postings list (WSJ postings.bin) 
@@ -84,8 +81,8 @@ int main(int argc, char *argv[])
 			listnumber++;
 			}
 
-		end = clock();
-		used = ((double) (end - start)) / CLOCKS_PER_SEC;
+		clock_t end = clock();
+		double used = ((double) (end - start)) / CLOCKS_PER_SEC;
 		printf("selector size %d: %.2f seconds\n", selectorsize, used);
 
 		fclose(fp);
