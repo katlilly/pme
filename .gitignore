@@ -16,6 +16,7 @@ test_sel_size
 testcov
 covtest
 test_compression
+get_optimal_packing_data
 *.gcov
 *.gcno
 *.gcda

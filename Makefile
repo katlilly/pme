@@ -1,5 +1,8 @@
 
-all : test_stats test_sg test_sel_size test_compression
+all : test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+
+get_optimal_packing_data : getOptimalPackings.cpp
+	g++ -Wall -std=c++11 getOptimalPackings.cpp -o get_optimal_packing_data
 
 test_compression : listStats.cpp compressPME.cpp selectorGen.cpp tests/compression_test.cpp
 	g++ -g -Wall -std=c++11 listStats.cpp compressPME.cpp selectorGen.cpp tests/compression_test.cpp -o test_compression
