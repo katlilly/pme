@@ -17,4 +17,4 @@ test_sg : listStats.cpp selectorGen.cpp tests/sg_test.cpp
 	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/sg_test.cpp -o test_sg
 
 clean:
-	- rm -f *.gcno *.gcda *.gcov test_compression test_pme test_sort test_stats test_sg test_sel_size testdata/test_sg.txt testdata/test_sg.txt *# *~ tests/*~
+	- rm -f *.gcno *.gcda *.gcov get_optimal_packing_data test_compression test_pme test_sort test_stats test_sg test_sel_size testdata/test_sg.txt testdata/test_sg.txt *# *~ tests/*~
