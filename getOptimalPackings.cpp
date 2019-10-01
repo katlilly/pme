@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <cstdlib>
+#include <string.h>
 
 #define NUMDOCS (1024 * 1024 * 128)
 #define NUMLISTS 499692
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
 	uint length;
 	int *postings_list = new int[NUMDOCS];
 	int *dgaps = new int[NUMDOCS];
-	int **selectors = new int* [NUMDOCS];
+	//int **selectors = new int* [NUMDOCS];
 		
 	while (fread(&length, sizeof(length), 1, fp) == 1)
 		{
@@ -90,15 +91,16 @@ int main(int argc, char *argv[])
 			int bits_used = 0;
 			uint column = 0;
 			uint current = 0;
-			int column_width;
+			int column_width = 0;
 			int *frequencies = new int [32];
+			memset(frequencies, 0, 32*4);
 
 			int num_512bit_words = 0;
 			//int num_unique_selectors = 0;
 
 			int *bits_in_huff_code = new int [32];
+
 			// huffman code for list #95
-			
 			bits_in_huff_code[2] = 5;
 			bits_in_huff_code[3] = 4;
 			bits_in_huff_code[4] = 1;
@@ -127,10 +129,10 @@ int main(int argc, char *argv[])
 						frequencies[column_width]++;
 						current += 16;
 						}
-					selectors[num_512bit_words] = new int[column + 1];//= columns;
-					selectors[num_512bit_words][0] = column;
-					for (uint i = 1; i < column + 1; i++)
-						selectors[num_512bit_words][i] = columns[i];
+					//selectors[num_512bit_words] = new int[column + 1];//= columns;
+					//selectors[num_512bit_words][0] = column;
+					//for (uint i = 1; i < column + 1; i++)
+					//	selectors[num_512bit_words][i] = columns[i];
 							  
 					}
 
@@ -166,8 +168,12 @@ int main(int argc, char *argv[])
 
 			printf("list length: %d, AVX words: %d\n", length, num_512bit_words);
 			printf("dgaps per 512-bit word: %.1f\n", (double) length / num_512bit_words);
-			
+
+			delete [] bits_in_huff_code;
 			delete [] columns;
+			delete [] frequencies;
+
+		
 		}
 
 		listnumber++;
