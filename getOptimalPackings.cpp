@@ -44,6 +44,17 @@ int get_bitwidth(uint x)
 	}
 
 
+int compare_selectors(int *selector_a, int length_a, int *selector_b, int length_b)
+	{
+	if (length_a != length_b)
+		return 1;
+	for (int i = 0; i < length_a; i++)
+		if (selector_a[i] != selector_b[i])
+			return 1;
+	return 0;
+	}
+
+
 int main(int argc, char *argv[])
 	{
 	const char *filename = "postings.bin";
@@ -52,11 +63,11 @@ int main(int argc, char *argv[])
 		exit(printf("Cannot open %s\n", filename));
 
 	int listnumber = 0;
-	int length;
+	uint length;
 	int *postings_list = new int[NUMDOCS];
 	int *dgaps = new int[NUMDOCS];
-	int *check = new int [NUMDOCS];
-	
+	int **selectors = new int* [NUMDOCS];
+		
 	while (fread(&length, sizeof(length), 1, fp) == 1)
 		{
 		if (fread(postings_list, sizeof(*postings_list), length, fp) != length)
@@ -67,29 +78,42 @@ int main(int argc, char *argv[])
 		 */
 		dgaps[0] = postings_list[0];
 		int prev = postings_list[0];
-		for (int i = 1; i < length; i++)
+		for (uint i = 1; i < length; i++)
 			{
 			dgaps[i] = postings_list[i] - prev;
 			prev = postings_list[i];
 			}
 	
-		if (length > 10000)
+		if (listnumber == 95)
 			{
 			int *columns = new int [32];
 			int bits_used = 0;
-			int column = 0;
-			int current = 0;
+			uint column = 0;
+			uint current = 0;
 			int column_width;
+			int *frequencies = new int [32];
 
 			int num_512bit_words = 0;
-			int num_unique_selectors = 0;
+			//int num_unique_selectors = 0;
+
+			int *bits_in_huff_code = new int [32];
+			// huffman code for list #95
+			
+			bits_in_huff_code[2] = 5;
+			bits_in_huff_code[3] = 4;
+			bits_in_huff_code[4] = 1;
+			bits_in_huff_code[5] = 2;
+			bits_in_huff_code[6] = 3;
+			bits_in_huff_code[7] = 5; 
+			
+			int maxselectorbits = 0;
 			
 			while (current < length)
 				{
 				column = 0;
 				for (bits_used = 0; bits_used < 32; bits_used += column_width)
 					{
-					for (int row = 0; row < 16; row++)
+					for (uint row = 0; row < 16; row++)
 						if (current + row < length)
 							column_width |= dgaps[current + row];
 
@@ -100,62 +124,55 @@ int main(int argc, char *argv[])
 					if (column_width + bits_used <= 32)
 						{
 						columns[column++] = column_width;
+						frequencies[column_width]++;
 						current += 16;
 						}
+					selectors[num_512bit_words] = new int[column + 1];//= columns;
+					selectors[num_512bit_words][0] = column;
+					for (uint i = 1; i < column + 1; i++)
+						selectors[num_512bit_words][i] = columns[i];
+							  
 					}
 
 				num_512bit_words++;
 				int sum = 0;
-				for (int i = 0; i < column; i++)
+				uint i;
+				int bitsneeded = 0;
+				for (i = 0; i < column; i++)
 					{
 					sum += columns[i];
-					//printf("%d, ", columns[i]);
+					bitsneeded += bits_in_huff_code[columns[i]];
+					//printf("%d ", columns[i]);
 					}
-				//printf("%      d bits used\n", sum);
+				if (bitsneeded > maxselectorbits)
+					maxselectorbits = bitsneeded;
+				//printf("\nselector can be encoded in %d bits\n", bitsneeded);
+				//printf("     %d ints packed into %d bits\n", i, sum);
 				}
 			//printf("%d: packed %d words using %d unique selectors\n", length, num_512bit_words, num_unique_selectors);
-			//printf("mean bits per dgap: %.2f\n\n", (double) 512 * num_512bit_words / length);
-			printf("%d, %.2f\n", length, (double) 512 * num_512bit_words / length);
+			printf("list %d, length %d, bits per dgap %.2f\n", listnumber, length, (double) 512 * num_512bit_words / length);
+			printf("max selector bits: %d\n", maxselectorbits);
+			int unique_widths = 0;
+			for (int i = 0; i < 32; i++)
+				{
+				//printf("%d: %d\n", i, frequencies[i]);
+				if (frequencies[i])
+					unique_widths++;
+				}
+				
+			printf("number of unique widths in this list %d\n", unique_widths);
+			//	printf("%d: %d\n", i, frequencies[i]);
+
+
+			printf("list length: %d, AVX words: %d\n", length, num_512bit_words);
+			printf("dgaps per 512-bit word: %.1f\n", (double) length / num_512bit_words);
 			
-			//while (current < length)
-			//{
-			//printf("new word\n");
-			// find the optimal packing for next 512bits
-			
-			// while (bitsused < 32 && current < length)
-			// 	{
-			// 	printf("new column\n");
-			// 	//printf
-			// 	// find bitwidth required for current column
-			// 	result = 0;
-			// 	for (int row = 0; row < 16; row++)
-			// 		if (current + row < length)
-			// 			result |= dgaps[current + row];
-			// 	result = getBitwidth(result);
-			// 	printf("column width = %d\n", result);
-			
-			// 	bitsused -= result;
-			// 	current += 16;
-			// 	column++;
-			// 	//printf("%d columns in this word\n", column);
-			// 	}
-				//}
 			delete [] columns;
 		}
 
-		// if (length > 100)
-		// 	{
-		// 	printf("listnumber %d, length: %d\n", listnumber, length);
-
-		// 	int pos = 0;
-		// 	while (pos < length)
-		// 		{
-		// 		printf("%d, ", dgaps[pos++]);
-		// 		}
-		// 	}
-
 		listnumber++;
 		}
+
 	
 	delete [] dgaps;
 	delete [] postings_list;
