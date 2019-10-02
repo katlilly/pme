@@ -60,14 +60,23 @@ int main(int argc, char *argv[])
 	{
 	const char *filename = "postings.bin";
 	FILE *fp;
+	int input_list_number;
 	if (NULL == (fp = fopen(filename, "rb")))
 		exit(printf("Cannot open %s\n", filename));
 
+	if (argc != 2)
+		exit(printf("which list number do you want?\n"));
+	else
+		input_list_number = atoi(argv[1]);
 	int listnumber = 0;
 	uint length;
 	int *postings_list = new int[NUMDOCS];
 	int *dgaps = new int[NUMDOCS];
-	//int **selectors = new int* [NUMDOCS];
+	//int *selectors = new int [NUMDOCS];
+	int *num_unique_perlist = new int [11];
+	int max_compressed_length = 0;
+	int list_w_most_selectors;
+	//printf("list number, list length, bits per dgap, unique column widths, compressed bytes, raw bytes, compression ratio\n");
 		
 	while (fread(&length, sizeof(length), 1, fp) == 1)
 		{
@@ -84,9 +93,12 @@ int main(int argc, char *argv[])
 			dgaps[i] = postings_list[i] - prev;
 			prev = postings_list[i];
 			}
-	
-		if (listnumber == 95)
+
+
+		if (listnumber == input_list_number)
+		//if (length > 10000)
 			{
+			//printf("%d\n", listnumber);
 			int *columns = new int [32];
 			int bits_used = 0;
 			uint column = 0;
@@ -98,15 +110,14 @@ int main(int argc, char *argv[])
 			int num_512bit_words = 0;
 			//int num_unique_selectors = 0;
 
-			int *bits_in_huff_code = new int [32];
-
 			// huffman code for list #95
-			bits_in_huff_code[2] = 5;
+			int *bits_in_huff_code = new int [32];
+		/* bits_in_huff_code[2] = 5;
 			bits_in_huff_code[3] = 4;
 			bits_in_huff_code[4] = 1;
 			bits_in_huff_code[5] = 2;
 			bits_in_huff_code[6] = 3;
-			bits_in_huff_code[7] = 5; 
+			bits_in_huff_code[7] = 5;  */
 			
 			int maxselectorbits = 0;
 			
@@ -144,44 +155,66 @@ int main(int argc, char *argv[])
 					{
 					sum += columns[i];
 					bitsneeded += bits_in_huff_code[columns[i]];
-					//printf("%d ", columns[i]);
+					printf("%d", columns[i]);
 					}
+				printf("\n");
 				if (bitsneeded > maxselectorbits)
 					maxselectorbits = bitsneeded;
-				//printf("\nselector can be encoded in %d bits\n", bitsneeded);
-				//printf("     %d ints packed into %d bits\n", i, sum);
+				
 				}
 			//printf("%d: packed %d words using %d unique selectors\n", length, num_512bit_words, num_unique_selectors);
-			printf("list %d, length %d, bits per dgap %.2f\n", listnumber, length, (double) 512 * num_512bit_words / length);
-			printf("max selector bits: %d\n", maxselectorbits);
+			//printf("\nlist %d, length %d, bits per dgap %.2f\n", listnumber, length, (double) 512 * num_512bit_words / length);
+			//printf("max selector bits: %d\n", maxselectorbits);
 			int unique_widths = 0;
 			for (int i = 0; i < 32; i++)
-				{
-				//printf("%d: %d\n", i, frequencies[i]);
 				if (frequencies[i])
+					{
 					unique_widths++;
-				}
+					//printf("%d: %d\n", i, frequencies[i]);
+					}
 				
-			printf("number of unique widths in this list %d\n", unique_widths);
-			//	printf("%d: %d\n", i, frequencies[i]);
+			//printf("number of unique widths in this list %d\n", unique_widths);
+		
 
 
-			printf("list length: %d, AVX words: %d\n", length, num_512bit_words);
-			printf("dgaps per 512-bit word: %.1f\n", (double) length / num_512bit_words);
+			//printf("list length: %d, AVX words: %d\n", length, num_512bit_words);
+			//printf("dgaps per 512-bit word: %.1f\n", (double) length / num_512bit_words);
 
+			// 64 bytes of payload plus 4 bytes of selector
+			int compressed_bytes = num_512bit_words * 68;
+			int raw_bytes = length * 4;
+			double compression_ratio = (double) compressed_bytes / raw_bytes;
+
+			
+			//printf("%d, %d, %.4f, %d, %d, %d, %.3f\n", listnumber, length, (double) 512 * num_512bit_words / length, unique_widths, compressed_bytes, raw_bytes, compression_ratio);
+
+			num_unique_perlist[unique_widths]++;
+			
 			delete [] bits_in_huff_code;
 			delete [] columns;
 			delete [] frequencies;
+			
+			if (num_512bit_words > max_compressed_length)
+				{
+				max_compressed_length = num_512bit_words;
+				list_w_most_selectors = listnumber + 1;
+				}
+			}
 
-		
+
+			listnumber++;
+			
 		}
 
-		listnumber++;
-		}
-
+//for (int i = 0; i < 11; i++)
+//	printf("%d, %d\n", i, num_unique_perlist[i]);
 	
 	delete [] dgaps;
 	delete [] postings_list;
+	delete [] num_unique_perlist;
+
+	
+	//printf("list #%d used %d selectors\n", list_w_most_selectors, max_compressed_length);
 	
 	return 0;
 	}
