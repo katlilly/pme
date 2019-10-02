@@ -74,8 +74,8 @@ int main(int argc, char *argv[])
 	int *dgaps = new int[NUMDOCS];
 	//int *selectors = new int [NUMDOCS];
 	int *num_unique_perlist = new int [11];
-	int max_compressed_length = 0;
-	int list_w_most_selectors;
+//	int max_compressed_length = 0;
+//	int list_w_most_selectors;
 	//printf("list number, list length, bits per dgap, unique column widths, compressed bytes, raw bytes, compression ratio\n");
 		
 	while (fread(&length, sizeof(length), 1, fp) == 1)
@@ -86,18 +86,19 @@ int main(int argc, char *argv[])
 		/* 
 			Convert docnums to dgaps
 		 */
-		dgaps[0] = postings_list[0];
-		int prev = postings_list[0];
-		for (uint i = 1; i < length; i++)
-			{
-			dgaps[i] = postings_list[i] - prev;
-			prev = postings_list[i];
-			}
-
+		
 
 		if (listnumber == input_list_number)
 		//if (length > 10000)
 			{
+			dgaps[0] = postings_list[0];
+			int prev = postings_list[0];
+			for (uint i = 1; i < length; i++)
+				{
+				dgaps[i] = postings_list[i] - prev;
+				prev = postings_list[i];
+				}
+
 			//printf("%d\n", listnumber);
 			int *columns = new int [32];
 			int bits_used = 0;
@@ -105,13 +106,13 @@ int main(int argc, char *argv[])
 			uint current = 0;
 			int column_width = 0;
 			int *frequencies = new int [32];
-			memset(frequencies, 0, 32*4);
+			//memset(frequencies, 0, 32*4);
 
 			int num_512bit_words = 0;
 			//int num_unique_selectors = 0;
 
 			// huffman code for list #95
-			int *bits_in_huff_code = new int [32];
+//			int *bits_in_huff_code = new int [32];
 		/* bits_in_huff_code[2] = 5;
 			bits_in_huff_code[3] = 4;
 			bits_in_huff_code[4] = 1;
@@ -119,7 +120,7 @@ int main(int argc, char *argv[])
 			bits_in_huff_code[6] = 3;
 			bits_in_huff_code[7] = 5;  */
 			
-			int maxselectorbits = 0;
+//			int maxselectorbits = 0;
 			
 			while (current < length)
 				{
@@ -148,31 +149,32 @@ int main(int argc, char *argv[])
 					}
 
 				num_512bit_words++;
-				int sum = 0;
+				//int sum = 0;
 				uint i;
-				int bitsneeded = 0;
+				//int bitsneeded = 0;
 				for (i = 0; i < column; i++)
 					{
-					sum += columns[i];
-					bitsneeded += bits_in_huff_code[columns[i]];
+					//sum += columns[i];
+					//bitsneeded += bits_in_huff_code[columns[i]];
 					printf("%d", columns[i]);
 					}
 				printf("\n");
-				if (bitsneeded > maxselectorbits)
-					maxselectorbits = bitsneeded;
+				//if (bitsneeded > maxselectorbits)
+				//maxselectorbits = bitsneeded;
 				
 				}
 			//printf("%d: packed %d words using %d unique selectors\n", length, num_512bit_words, num_unique_selectors);
 			//printf("\nlist %d, length %d, bits per dgap %.2f\n", listnumber, length, (double) 512 * num_512bit_words / length);
 			//printf("max selector bits: %d\n", maxselectorbits);
-			int unique_widths = 0;
-			for (int i = 0; i < 32; i++)
-				if (frequencies[i])
-					{
-					unique_widths++;
+//			int unique_widths = 0;
+//			for (int i = 0; i < 32; i++)
+//				if (frequencies[i])
+//					{
+//					unique_widths++;
 					//printf("%d: %d\n", i, frequencies[i]);
-					}
-				
+//					}
+
+			//printf("%d\n", unique_widths);
 			//printf("number of unique widths in this list %d\n", unique_widths);
 		
 
@@ -181,25 +183,25 @@ int main(int argc, char *argv[])
 			//printf("dgaps per 512-bit word: %.1f\n", (double) length / num_512bit_words);
 
 			// 64 bytes of payload plus 4 bytes of selector
-			int compressed_bytes = num_512bit_words * 68;
-			int raw_bytes = length * 4;
-			double compression_ratio = (double) compressed_bytes / raw_bytes;
+//			int compressed_bytes = num_512bit_words * 68;
+//			int raw_bytes = length * 4;
+//			double compression_ratio = (double) compressed_bytes / raw_bytes;
 
 			
 			//printf("%d, %d, %.4f, %d, %d, %d, %.3f\n", listnumber, length, (double) 512 * num_512bit_words / length, unique_widths, compressed_bytes, raw_bytes, compression_ratio);
 
-			num_unique_perlist[unique_widths]++;
+//			num_unique_perlist[unique_widths]++;
 			
-			delete [] bits_in_huff_code;
+			//delete [] bits_in_huff_code;
 			delete [] columns;
 			delete [] frequencies;
 			
-			if (num_512bit_words > max_compressed_length)
-				{
-				max_compressed_length = num_512bit_words;
-				list_w_most_selectors = listnumber + 1;
-				}
-			}
+			// if (num_512bit_words > max_compressed_length)
+			// 	{
+			// 	max_compressed_length = num_512bit_words;
+			// 	list_w_most_selectors = listnumber + 1;
+			// 	}
+			} // end of this list
 
 
 			listnumber++;

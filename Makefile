@@ -1,5 +1,8 @@
 
-all : test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+all : get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+
+get_unique : get_num_unique_selectors.cpp
+	g++ -Wall -std=c++11 get_num_unique_selectors.cpp -o get_unique
 
 get_optimal_packing_data : getOptimalPackings.cpp
 	g++ -g -Wall -std=c++11 getOptimalPackings.cpp -o get_optimal_packing_data

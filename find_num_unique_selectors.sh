@@ -4,7 +4,7 @@
 for i in {1..499690}
 do
 	 echo $i
-	 ./get_optimal_packing_data $i > selectors$i.txt
+	 ./get_unique $i > selectors$i.txt
 	 less selectors$i.txt | wc -l
 	 uniq selectors$i.txt | wc -l
 	 rm selectors$i.txt
