@@ -1,8 +1,8 @@
 
-all : get_columns get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+all : get_widths get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
 
-get_columns : get_columns_and_widths.cpp
-	g++ -Wall -std=c++11 get_columns_and_widths.cpp -o get_columns
+get_widths : get_columns_and_widths.cpp
+	g++ -Wall -std=c++11 get_columns_and_widths.cpp -o get_widths
 
 get_unique : get_num_unique_selectors.cpp
 	g++ -Wall -std=c++11 get_num_unique_selectors.cpp -o get_unique
