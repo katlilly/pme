@@ -1,5 +1,8 @@
 
-all : get_widths get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+all : get_selectors get_widths get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+
+get_selectors : getSelectors.cpp runLengthEncode.cpp
+	g++ -Wall -std=c++11 runLengthEncode.cpp getSelectors.cpp -o get_selectors
 
 get_widths : get_columns_and_widths.cpp
 	g++ -Wall -std=c++11 get_columns_and_widths.cpp -o get_widths
@@ -23,4 +26,4 @@ test_sg : listStats.cpp selectorGen.cpp tests/sg_test.cpp
 	g++ -g -Wall -std=c++11 listStats.cpp selectorGen.cpp tests/sg_test.cpp -o test_sg
 
 clean:
-	- rm -f *.gcno *.gcda *.gcov get_optimal_packing_data test_compression test_pme test_sort test_stats test_sg test_sel_size testdata/test_sg.txt testdata/test_sg.txt *# *~ tests/*~
+	- rm -f *.gcno *.gcda *.gcov get_unique get_columns get_selectors get_widths get_optimal_packing_data test_compression test_pme test_sort test_stats test_sg test_sel_size testdata/test_sg.txt testdata/test_sg.txt *# *~ tests/*~
