@@ -1,5 +1,8 @@
 
-all : get_selectors get_widths get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+all : recursive_compress get_selectors get_widths get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
+
+recursive_compress : recursiveCompression.cpp
+	g++ -Wall -std=c++11 recursiveCompression.cpp -o recursive_compress
 
 get_selectors : getSelectors.cpp runLengthEncode.cpp
 	g++ -Wall -std=c++11 runLengthEncode.cpp getSelectors.cpp -o get_selectors

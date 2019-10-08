@@ -16,6 +16,7 @@ class RunLengthEncode
 		}
 
 	public:
-	int runlength_encode(uint8_t *dest, int *source, int length);
+	int encode(uint8_t *dest, int *source, int length);
+	int decode(int *decompressed, uint8_t *encoded, int length);
 
 	};

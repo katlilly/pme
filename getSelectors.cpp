@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 	if (NULL == (fp = fopen(filename, "rb")))
 		exit(printf("Cannot open %s\n", filename));
 
+	printf("list number, list length, payload bytes, number of columns in selector, bytes in compressed selector\n");
 	int listnumber = 0;
 	uint length;
 	int *postings_list = new int[NUMDOCS];
@@ -83,8 +84,8 @@ int main(int argc, char *argv[])
 
 		if (true)
 			{
-			printf("\n\nList number %d, length %d\n", listnumber, length);
-
+			//printf("\n\nList number %d, length %d\n", listnumber, length);
+			printf("%d, %d, ", listnumber, length);
 			/* 
 				Convert docnums to dgaps
 			*/
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
 				num_512bit_words++;
 
 				/*
-				  append collumn to array of raw selectors
+				  append column to array of raw selectors
 				 */
 				for (uint i = 0; i < column; i++)
 					raw_selectors[total_columns + i] = columns[i];
@@ -142,17 +143,30 @@ int main(int argc, char *argv[])
 			
 			delete [] columns;
 			delete [] frequencies;
+			printf("%d, %d, ", num_512bit_words * 64, total_columns);
 			}
 
 		/*
 		  compress selectors with run length encoding
 		 */
-		for (int i = 0; i < total_columns; i++)
-			printf("%d, ", raw_selectors[i]);
-		printf("\n");
+//    for (int i = 0; i < total_columns; i++)
+//			printf("%d, ", raw_selectors[i]);
+//		printf("\n");
 		
-		int result = rl_encoder.runlength_encode(compressed_selectors, raw_selectors, total_columns);
-				
+		int selector_bytes = rl_encoder.encode(compressed_selectors, raw_selectors, total_columns);
+		//printf("compressed length of selector for current list: %d bytes\n", result);
+		int *decompressed = new int[8 * selector_bytes];
+		int result = rl_encoder.decode(decompressed, compressed_selectors, selector_bytes);
+		for (int i = 0; i < result; i++)
+			{
+			//printf("%d, ", decompressed[i]);
+			if (decompressed[i] != raw_selectors[i])
+				exit(printf("compression or decompression error has occurred\n"));
+			}
+		//printf("\n");
+		printf("%d\n", selector_bytes);
+		
+		delete [] decompressed;
 		listnumber++;
 		}
 
