@@ -46,7 +46,7 @@ int get_bitwidth(uint x)
 	}
 
 
-typedef struct record {
+struct record {
 	int dgaps_compressed;
 	int num_512bit_words;
 	int num_selectors;
@@ -57,19 +57,22 @@ record compress(int *payload, int *selectors, int *raw, int length)
 	{
 	record result;
 	result.dgaps_compressed = length;
-
+	int *columns = new int[10000];
+	int num_512bit_words = 0;
 	int column, bits_used, column_width;
 	int current = 0;
+	int total_columns = 0;
 
 	while (current < length)
 		{
 		// find column widths for a single word
+		column_width = 0;
 		column = 0;
 		for (bits_used = 0; bits_used < 32; bits_used += column_width)
 			{
-			for (uint row = 0; row < 16; row++)
+			for (int row = 0; row < 16; row++)
 				if (current + row < length)
-					column_width |= dgaps[current + row];
+					column_width |= raw[current + row];
 
 			if (current > length)
 				break;
@@ -86,12 +89,13 @@ record compress(int *payload, int *selectors, int *raw, int length)
 		/*
 		  append columns in this word to array of raw selectors
 		*/
-		for (uint i = 0; i < column; i++)
-			raw_selectors[total_columns + i] = columns[i];
+		for (int i = 0; i < column; i++)
+			selectors[total_columns + i] = columns[i];
 
 		total_columns += column;
 		}
 
+	delete [] columns;
 	result.num_512bit_words = num_512bit_words;
 	result.num_selectors = total_columns;
 	return result;
@@ -109,10 +113,9 @@ int main(int argc, char *argv[])
 	uint length;
 	int *postings_list = new int[NUMDOCS];
 	int *dgaps = new int[NUMDOCS];
+	int *payloads = new int [NUMDOCS];
+	int *selectors = new int [10000];
 
-	int *raw_selectors = new int [10000]; // in wsj postings.bin, the largest number of columns per list is 9867
-	int *selector_selectors = new int [10000];
-	
 	while (fread(&length, sizeof(length), 1, fp) == 1)
 		{
 		if (fread(postings_list, sizeof(*postings_list), length, fp) != length)
@@ -129,104 +132,20 @@ int main(int argc, char *argv[])
 			prev = postings_list[i];
 			}
 
-		int *columns = new int [32];
-		int bits_used = 0;
-		uint column = 0;
-		uint current = 0;
-		int column_width = 0;
-		int num_512bit_words = 0;
-		int total_columns = 0;
-
 		/*
-		  find selectors
-		*/
+		   Compress dgaps
+		 */
+		record result = compress(payloads, selectors, dgaps, length);
+		printf("%d\n", result.num_selectors);
 		
-		
-		while (current < length)
-			{
-			/*
-			  find column widths for a single word
-			*/
-			column = 0;
-			for (bits_used = 0; bits_used < 32; bits_used += column_width)
-				{
-				for (uint row = 0; row < 16; row++)
-					if (current + row < length)
-						column_width |= dgaps[current + row];
-
-				if (current > length)
-					break;
-
-				column_width = get_bitwidth(column_width);
-				if (column_width + bits_used <= 32)
-					{
-					columns[column++] = column_width;
-					current += 16;
-					}
-				}
-			num_512bit_words++;
-
-			/*
-			  append columns in this word to array of raw selectors
-			*/
-			for (uint i = 0; i < column; i++)
-				raw_selectors[total_columns + i] = columns[i];
-
-			total_columns += column;
-			}
-
-
-		/*
-		  find selectors for selectors
-		*/
-
-		int num_512bit_words_for_selectors = 0;
-		int selector_columns = 0;
-		while (current < total_columns)
-			{
-			/*
-			  find column widths for a single word
-			*/
-			column = 0;
-			for (bits_used = 0; bits_used < 32; bits_used += column_width)
-				{
-				for (uint row = 0; row < 16; row++)
-					if (current + row < total_columns)
-						column_width |= raw_selectors[current + row];
-
-				if (current > total_columns)
-					break;
-
-				column_width = get_bitwidth(column_width);
-				if (column_width + bits_used <= 32)
-					{
-					columns[column++] = column_width;
-					current += 16;
-					}
-				}
-			num_512bit_words_for_selectors++;
-
-			/*
-			  append columns in this word to array of raw selectors
-			*/
-			
-			for (uint i = 0; i < column; i++)
-				selector_selectors[total_columns + i] = columns[i];
-
-			selector_columns += column;
-			}
-
-		printf("created %d selectors, and packed those with %d selectors\n", total_columns, selector_columns);
-			
-			
-		delete [] columns;
-			
-		//printf("%d\n", num_512bit_words);
 		listnumber++;
 		}
 
+	delete [] payloads;
+	delete [] selectors;
 	delete [] dgaps;
 	delete [] postings_list;
-
+	fclose(fp);
+		
 	return 0;
 	}

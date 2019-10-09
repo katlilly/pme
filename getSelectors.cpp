@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 			
 			
 			//uint8_t *compressed_selector = new uint8_t [10000];
-			int compressed_selector_size = 0;
+			//int compressed_selector_size = 0;
 
 			while (current < length)
 				{
