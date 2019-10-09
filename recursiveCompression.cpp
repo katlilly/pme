@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
 		
 		listnumber++;
 		}
+	
 	delete [] compressed_selectors;
 	delete [] selector_selectors ;
 	delete [] payloads;
