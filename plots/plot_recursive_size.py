@@ -17,6 +17,8 @@ depth2 = data[:,4]
 plt.plot(lengths, non_rec, 'o')
 plt.plot(lengths, depth1, 'o')
 plt.plot(lengths, depth2, 'o')
+plt.xlabel('list length')
+plt.ylabel('compressed size (bytes)')
 plt.legend(['non recursive','depth 1','depth 2'])
 plt.show()
 

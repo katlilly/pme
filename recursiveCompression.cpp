@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 		if ((int) length > (result.num_selectors - 1) * 16 + 16) 
 			exit(printf("too few columns\n"));
 
-		if (result.num_selectors > 5000)
+		if (result.num_selectors > 1000)
 			{
 			/*
 			  Encode the selectors as if they were dgaps
