@@ -45,20 +45,64 @@ int get_bitwidth(uint x)
 	return r;
 	}
 
+// return the number of bytes that would be used in run length encoding
+int get_rle_size(int *source, int length)
+	{
+	int count = 0;
+	int runlength = 0;
+	for (int index = 0; index < length; )
+		{
+		int current = source[index];
+		if (current == source[index + 1])
+			{
+			// keep looking for end of run
+			runlength++;
+			index++;
+			}
+		else
+			{
+			// have found the end of a run, now write it out
+			index++;
+			while(runlength > 7)
+				{
+				//dest[count] = 0;
+				//dest[count] |= 7;
+				//dest[count] |= current << 3;
+				runlength -= 8;
+				count++;
+				}
+			//dest[count] = 0;
+			//dest[count] |= runlength;
+			//dest[count] |= current << 3;
+			count++;
+			current = source[index];
+			runlength = 0;
+			}
+		}
+	return count; // return number of bytes written
+	}
 
 struct record {
 	int dgaps_compressed;
-	int num_512bit_words;
+	int payload_bytes;
 	int num_selectors;
 	};
+
+
+void print_record(record r, int name, int length)
+	{
+	printf("list number: %d, length: %d\n", name, length);
+	printf("payload = %d bytes\n", r.payload_bytes);
+	printf("total columns = %d\n\n", r.num_selectors);
+	}
 
 
 record compress(int *payload, int *selectors, int *raw, int length)
 	{
 	record result;
 	result.dgaps_compressed = length;
+	result.payload_bytes = 0;
 	int *columns = new int[10000];
-	int num_512bit_words = 0;
 	int column, bits_used, column_width;
 	int current = 0;
 	int total_columns = 0;
@@ -84,7 +128,7 @@ record compress(int *payload, int *selectors, int *raw, int length)
 				current += 16;
 				}
 			}
-		num_512bit_words++;
+		result.payload_bytes += 64;
 
 		/*
 		  append columns in this word to array of raw selectors
@@ -96,7 +140,6 @@ record compress(int *payload, int *selectors, int *raw, int length)
 		}
 
 	delete [] columns;
-	result.num_512bit_words = num_512bit_words;
 	result.num_selectors = total_columns;
 	return result;
 	}
@@ -115,6 +158,12 @@ int main(int argc, char *argv[])
 	int *dgaps = new int[NUMDOCS];
 	int *payloads = new int [NUMDOCS];
 	int *selectors = new int [10000];
+
+	int *compressed_selectors = new int [10000];
+	int *selector_selectors = new int [10000];
+
+	int *cc_selectors = new int [10000];
+	int *ss_selectors = new int [10000];
 
 	while (fread(&length, sizeof(length), 1, fp) == 1)
 		{
@@ -136,11 +185,47 @@ int main(int argc, char *argv[])
 		   Compress dgaps
 		 */
 		record result = compress(payloads, selectors, dgaps, length);
-		printf("%d\n", result.num_selectors);
+//		for (int i = 0; i < result.num_selectors; i++)
+//			printf("%d, ", selectors[i]);
+//		printf("\n");
+//		print_record(result, listnumber, length);
+
+		if ((int) length < (result.num_selectors - 1) * 16)
+			exit(printf("too many columns\n"));
+		if ((int) length > (result.num_selectors - 1) * 16 + 16) 
+			exit(printf("too few columns\n"));
+
+		if (result.num_selectors > 5000)
+			{
+			/*
+			  Encode the selectors as if they were dgaps
+			 */
+//			printf("=======================\n");
+//			print_record(result, listnumber, length);
+			record secondaryresult = compress(compressed_selectors, selector_selectors, selectors, result.num_selectors);
+//			print_record(secondaryresult, listnumber, result.num_selectors);
+
+			// one more time
+			record tertiaryresult = compress(cc_selectors, ss_selectors, selector_selectors, secondaryresult.num_selectors);
+			
+
+			
+			/*
+			  Run length encode the selectors of the selectors
+			 */
+			int initial_size = result.payload_bytes + get_rle_size(selectors, result.num_selectors);
+			int depth1_size = result.payload_bytes + secondaryresult.payload_bytes +
+				get_rle_size(selector_selectors, secondaryresult.num_selectors);
+			int depth2_size = result.payload_bytes + secondaryresult.payload_bytes +
+				tertiaryresult.payload_bytes + get_rle_size(ss_selectors, tertiaryresult.num_selectors);
+//printf("non recursive size: %d bytes\n      depth 1 size: %d bytes\n      depth 2 size: %d bytes\n", initial_size, depth1_size, depth2_size);
+			printf("%d, %d, %d, %d, %d\n", listnumber, length, initial_size, depth1_size, depth2_size);
+			}
 		
 		listnumber++;
 		}
-
+	delete [] compressed_selectors;
+	delete [] selector_selectors ;
 	delete [] payloads;
 	delete [] selectors;
 	delete [] dgaps;
