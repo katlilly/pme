@@ -13,7 +13,6 @@
 struct record {
 	int dgaps_compressed;
 	int payload_bytes;
-	int num_selectors;
 	int selector_bytes;
 	};
 
@@ -24,12 +23,6 @@ struct thing {
 	};
 
 
-void print_record(record r, int name, int length)
-	{
-	printf("list number: %d, length: %d\n", name, length);
-	printf("payload = %d bytes\n", r.payload_bytes);
-	printf("total columns = %d, %d bytes\n\n", r.num_selectors, r.selector_bytes);
-	}
 
 
 /* 
@@ -218,28 +211,19 @@ int decode(int *decoded, int *selectors, int num_selectors, int *payload)
 record avx_optimal_pack(int *payload, int *selectors, int num_selectors, int *raw, int *end)
 	{
 	record list;
-
+	list.dgaps_compressed = 0;
 	thing word = encode_one_word(payload, selectors, num_selectors, raw, end);
 
-	list.dgaps_compressed = word.n_compressed;
-	list.num_selectors = num_selectors;
-	list.payload_bytes = 64;
-	list.selector_bytes = 0;
-
-
-	//	while (raw < end)
-//		{
-//	thing word = encode_one_word(payload, selectors, raw, end);
-		
-//		payload += 16;
-//		selectors += word.n_columns;
-//		raw += word.n_compressed;
+	while (raw < end)
+		{
+		thing word = encode_one_word(payload, selectors, num_selectors, raw, end);
+		payload += 64;
+		selectors += word.n_columns;
+		num_selectors -= word.n_columns;
+		raw += word.n_compressed;
+		list.dgaps_compressed += word.n_compressed;
+		}
 	
-//		list.dgaps_compressed += word.n_compressed;
-//		list.num_selectors += word.n_columns;
-//		list.payload_bytes += 64;
-//		list.selector_bytes += word.n_columns; // for now
-//		}
 	return list;
 	}
 
@@ -277,7 +261,7 @@ int main(int argc, char *argv[])
 			}
 
 		
-		if (true) // for now just encode the first 512 bits of the first long-enough list
+		if (true) 
 			{
 			printf("\n\nlistnumber: %d\n", listnumber);
 			
@@ -291,10 +275,10 @@ int main(int argc, char *argv[])
 			
 			// decompress first 512 bits of payload
 			int ndecompressed = decode(decoded, selectors, num_selectors, payload);
+			// this return value is not correct
 			
 			// check that decoded == raw
 			printf("%d decompressed\n", ndecompressed);
-			//for (int i = 0; i < ndecompressed; i++)
 			for (int i = 0; i < result.dgaps_compressed; i++)
 				{
 				printf("%d <-> %d\n", dgaps[i], decoded[i]);
