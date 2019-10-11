@@ -121,14 +121,15 @@ int generate_selectors(int *selectors, int *dgaps, int *end)
 		sum += selectors[num_columns];
 		if (sum > 32)
 			break;
+		if (num_columns >= num_selectors)
+			break;
 		}
-
+	
 	int i;
 	int bitsused = 0;
 	//for (int bitsused = 0; bitsused + selectors[i + 1] <= 32; bitsused += selectors[i])
 	for (i = 0; i < num_columns; i++)
 		{
-		printf("bitsused: %d\n", bitsused);
 		// gather next 16 ints into a 512bit register
 		columnvector = _mm512_i32gather_epi32(indexvector, raw, 4);
 
@@ -140,12 +141,16 @@ int generate_selectors(int *selectors, int *dgaps, int *end)
 		compressedword = _mm512_or_epi32(compressedword, columnvector);
 		raw += 16;
 		bitsused += selectors[i];
+		printf("bitsused: %d\n", bitsused);
+
 		}
 
 	// write compressed data to memory as 32bit ints
 	_mm512_i32scatter_epi32(payload, indexvector, compressedword, 4);
 
 	result.n_compressed = 16 * i;
+	if (result.n_compressed > length)
+		result.n_compressed = length;
 	result.n_columns = i;
 
 	return result;
@@ -174,7 +179,7 @@ int decode(int *decoded, int *selectors, int num_selectors, int *payload)
 	 */
 	int sum = 0;
 	int num_columns;
-	for (num_columns = 0; num_columns < 32; num_columns++)
+	for (num_columns = 0; num_columns < 32 && num_columns < num_selectors; num_columns++)
 		{
 		sum += selectors[num_columns];
 		if (sum > 32)
@@ -190,7 +195,7 @@ int decode(int *decoded, int *selectors, int num_selectors, int *payload)
 		// get selector and create bitmask vector
 		int width = selectors[i];
 		int mask = pow(2, width) - 1;
-		printf("selector: %d, mask: %d\n", width, mask);
+		//printf("selector: %d, mask: %d\n", width, mask);
 		__m512i mask_vector = _mm512_set1_epi32(mask);
 		
 		// get 16 dgaps by ANDing mask with compressed word
@@ -272,33 +277,30 @@ int main(int argc, char *argv[])
 			}
 
 		
-		if (length > 512) // for now just encode the first 512 bits of the first long-enough list
+		if (true) // for now just encode the first 512 bits of the first long-enough list
 			{
-			printf("listnumber %d\n", listnumber);
+			printf("\n\nlistnumber: %d\n", listnumber);
+			
 			// first create the selectors
 			int num_selectors = generate_selectors(selectors, dgaps, dgaps + length);
-						
+			printf("%d selectors\n", num_selectors);
+			
 			// then compress using list of selectors
 			record result = avx_optimal_pack(payload, selectors, num_selectors, dgaps, dgaps + length);
-
-			printf("encoded %d dgaps into first 512 bits\n", result.dgaps_compressed);
-			for (int i = 0; i < 3; i++)
-				printf("%d, ", selectors[i]);
-			printf("<--- those are the column widths used\n");
-
+			printf("%d dgaps compressed\n", result.dgaps_compressed);
+			
 			// decompress first 512 bits of payload
 			int ndecompressed = decode(decoded, selectors, num_selectors, payload);
-
+			
 			// check that decoded == raw
-			for (int i = 0; i < ndecompressed; i++)
+			printf("%d decompressed\n", ndecompressed);
+			//for (int i = 0; i < ndecompressed; i++)
+			for (int i = 0; i < result.dgaps_compressed; i++)
 				{
+				printf("%d <-> %d\n", dgaps[i], decoded[i]);
 				if (dgaps[i] != decoded[i])
 					exit(printf("oops\n"));
-				printf("%d = %d\n", dgaps[i], decoded[i]);
 				}
-			printf("\n\n");
-			
-			//exit(0);
 			}
 		
 		listnumber++;
