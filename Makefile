@@ -1,6 +1,9 @@
 
 all : recursive_compress get_selectors get_widths get_unique test_stats test_sg test_sel_size test_compression get_optimal_packing_data
 
+this_one : kotenei.cpp
+	g++ -Wall -march=native -std=c++11 kotenei.cpp -o this_one
+
 recursive_compress : recursiveCompression.cpp
 	g++ -g -Wall -std=c++11 recursiveCompression.cpp -o recursive_compress
 

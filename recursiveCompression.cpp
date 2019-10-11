@@ -193,7 +193,8 @@ int main(int argc, char *argv[])
 		if ((int) length > (result.num_selectors - 1) * 16 + 16) 
 			exit(printf("too few columns\n"));
 
-		if (result.num_selectors > 1000)
+//		if (result.num_selectors > 1000)
+		if (true)
 			{
 			
 			// Encode the selectors as if they were dgaps
@@ -206,7 +207,7 @@ int main(int argc, char *argv[])
 			int initial_size = result.payload_bytes + get_rle_size(selectors, result.num_selectors);
 			int depth1_size = result.payload_bytes + secondaryresult.payload_bytes + get_rle_size(selector_selectors, secondaryresult.num_selectors);
 			int depth2_size = result.payload_bytes + secondaryresult.payload_bytes + tertiaryresult.payload_bytes + get_rle_size(ss_selectors, tertiaryresult.num_selectors);
-			printf("%d, %d, %d, %d, %d\n", listnumber, length, initial_size, depth1_size, depth2_size);
+			printf("%d, %d, %d, %d, %d, %d, %d\n", listnumber, length, initial_size, depth1_size, depth2_size, result.num_selectors, result.payload_bytes);
 			}
 		
 		listnumber++;
