@@ -109,9 +109,26 @@ int generate_selectors(int *selectors, int *dgaps, int *end)
 	__m512i indexvector = _mm512_set_epi32(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 	__m512i columnvector;
 
-	int i = 0;
-	for (int bitsused = 0; bitsused + selectors[i + 1] <= 32; bitsused += selectors[i])
+   /*
+	  Decide how many columns to pack in this word
+	 */
+	int sum = 0;
+	int num_columns;
+	for (num_columns = 0; num_columns < 32; num_columns++)
 		{
+		//if (num_columns > num_selectors)
+		//	break;
+		sum += selectors[num_columns];
+		if (sum > 32)
+			break;
+		}
+
+	int i;
+	int bitsused = 0;
+	//for (int bitsused = 0; bitsused + selectors[i + 1] <= 32; bitsused += selectors[i])
+	for (i = 0; i < num_columns; i++)
+		{
+		printf("bitsused: %d\n", bitsused);
 		// gather next 16 ints into a 512bit register
 		columnvector = _mm512_i32gather_epi32(indexvector, raw, 4);
 
@@ -122,7 +139,7 @@ int generate_selectors(int *selectors, int *dgaps, int *end)
 		// pack this column of 16 dgaps into compressed 512bit word
 		compressedword = _mm512_or_epi32(compressedword, columnvector);
 		raw += 16;
-		i++;
+		bitsused += selectors[i];
 		}
 
 	// write compressed data to memory as 32bit ints
@@ -274,7 +291,11 @@ int main(int argc, char *argv[])
 
 			// check that decoded == raw
 			for (int i = 0; i < ndecompressed; i++)
+				{
+				if (dgaps[i] != decoded[i])
+					exit(printf("oops\n"));
 				printf("%d = %d\n", dgaps[i], decoded[i]);
+				}
 			printf("\n\n");
 			
 			//exit(0);
